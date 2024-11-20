@@ -10,19 +10,19 @@ Add this line to your application's Gemfile:
 ```ruby
 gem 'rider-kick'
 gem 'sun-sword'
-
 ```
 
+
 And then execute:
-$ rails new kotaro_minami -d=postgresql -T --skip-javascript --skip-asset-pipeline
-$ bundle install
-$ rails generate rider_kick:init
-$ rails generate rider_kick:clean_arch --setup
-$ rails db:drop db:create db:migrate db:seed
-$ rails generate sun_sword:frontend
-
-$ rubocop -a
-
+```bash
+    $ rails new kotaro_minami -d=postgresql -T --skip-javascript --skip-asset-pipeline
+    $ bundle install
+    $ rails generate rider_kick:init
+    $ rails generate rider_kick:clean_arch --setup
+    $ rails db:drop db:create db:migrate db:seed
+    $ rails generate sun_sword:frontend
+    $ rubocop -a
+```
 ## Usage
 ```bash
 Description:
