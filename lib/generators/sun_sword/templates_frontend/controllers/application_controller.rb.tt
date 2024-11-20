@@ -1,0 +1,36 @@
+class ApplicationController < ActionController::Base
+  # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
+  allow_browser versions: :modern
+
+  protected
+
+  def build_contract(params)
+    # { "<%=RiderKick.scope_owner_column.to_s%>": current_auth.account.id SecureRandom.uuid }.merge(params)
+    { <%=RiderKick.scope_owner_column.to_s%>: SecureRandom.uuid }.merge(params)
+  end
+
+  def build_form_errors(params, model, errors)
+    params.keys.each do |key|
+      model[key] = params[key]
+    end
+    if errors.is_a?(Hash)
+      errors.keys.each do |key|
+        model.errors.add(key, :invalid, message: errors[key][0])
+      end
+    elsif errors.is_a?(Array)
+      errors.each do |error|
+        if error.options.present?
+          model.errors.add(error.attribute, error.type, message: error.options['message'])
+        else
+          model.errors.add(error.attribute, error.type)
+        end
+      end
+    end
+    model
+  end
+
+  def set_layouts
+    # "#{current_auth.user.role}/application"
+    'dashboard/application'
+  end
+end

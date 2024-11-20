@@ -1,0 +1,48 @@
+<div class="inline-block">
+  <button data-action="click->web#confirmationDestroy" data-web-id-param="<%%= value.id %>" class="text-sm font-semibold leading-6 text-gray-900">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-orange-400 hover:text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+    </svg>
+  </button>
+  <div class="confirmation-destroy-<%%= value.id %> hidden relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="false">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity min-h-screen z-100"></div>
+    <div class="fixed inset-0 z-100 w-screen overflow-y-auto">
+      <div class="flex min-h-full justify-center p-4 text-center items-center sm:p-0">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+          <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+            <button data-action="click->web#confirmationDestroyCancel" data-web-id-param="<%%= value.id %>" type="button" class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+              <span class="sr-only">Close</span>
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <div class="flex flex-row">
+            <div class="basis-1/4">
+              <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="ml-4 mt-0 text-left basis-2/3">
+              <h3 class="font-semibold leading-6 text-gray-900" id="modal-title">Hapus Data</h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500 whitespace-normal">Data yang di hapus akan terhapus. Apakah kamu ingin menghapus data?</p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-4 flex flex-row-reverse">
+            <form class="button_to" method="post" action="<%%= eval("#{key}_path(id: '#{value.id}')") %>">
+              <input type="hidden" name="_method" value="delete" autocomplete="off">
+              <button type="submit" class="inline-flex justify-center m-2 class-button">Hapus</button>
+              <%%= hidden_field_tag :authenticity_token, form_authenticity_token -%>
+            </form>
+            <button data-action="click->web#confirmationDestroyCancel" data-web-id-param="<%%= value.id %>" type="button" class="inline-flex justify-center m-2 class-button-outline">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

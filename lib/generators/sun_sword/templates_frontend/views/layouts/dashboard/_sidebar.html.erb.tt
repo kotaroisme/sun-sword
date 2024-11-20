@@ -1,0 +1,60 @@
+<!-- Sidebar component, swap this element with another sidebar if you like -->
+<div class="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-2">
+  <div class="flex h-16 shrink-0 items-center">
+    <%%= render 'components/layouts/sidebar_logo' %>
+  </div>
+  <nav class="flex flex-1 flex-col">
+    <ul role="list" class="flex flex-1 flex-col gap-y-7">
+      <li>
+        <ul role="list" class="-mx-2 space-y-1">
+          <li>
+            <div>
+              <button type="button" class="flex items-center w-full text-left rounded-md p-2 gap-x-3 text-sm leading-6 font-semibold text-gray-700" aria-controls="sub-menu-1" aria-expanded="false">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                  <path d="M2.273 5.625A4.483 4.483 0 015.25 4.5h13.5c1.141 0 2.183.425 2.977 1.125A3 3 0 0018.75 3H5.25a3 3 0 00-2.977 2.625zM2.273 8.625A4.483 4.483 0 015.25 7.5h13.5c1.141 0 2.183.425 2.977 1.125A3 3 0 0018.75 6H5.25a3 3 0 00-2.977 2.625zM5.25 9a3 3 0 00-3 3v6a3 3 0 003 3h13.5a3 3 0 003-3v-6a3 3 0 00-3-3H15a.75.75 0 00-.75.75 2.25 2.25 0 01-4.5 0A.75.75 0 009 9H5.25z"/>
+                </svg>
+                Manages
+              </button>
+              <!-- Expandable link section, show/hide based on state. -->
+              <ul class="mt-1 px-2" id="sub-menu-1">
+                 <%# generate_link %>
+              </ul>
+            </div>
+          </li>
+
+        </ul>
+      </li>
+    </ul>
+  </nav>
+  <nav class="flex flex-1 flex-col">
+    <ul role="list" class="flex flex-1 flex-col gap-y-7">
+      <li class="-mx-4 mt-auto">
+        <div class="profile-<%%= from %> hidden mt-2.5 mb-5 w-32 rounded-md bg-white shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
+          <!-- Active: "bg-gray-50", Not Active: "" -->
+          <div class="mt-3 w-60 rounded-lg bg-white text-sm font-normal text-slate-900 shadow-md ring-1 ring-slate-900/5 focus:outline-none sm:-mr-3.5">
+            <div class="truncate px-3.5 py-3" role="none">
+              <div class="text-xs text-gray-500">Signed in as</div>
+              <div class="mt-3 font-semibold">kotaroisme@gmail.com</div>
+            </div>
+            <div class="divide-y divide-gray-100 ">
+              <div></div>
+              <div class="py-1.5" role="none">
+                <a class="block py-1.5 px-3.5 hover:bg-slate-100" href="#">Changelog</a>
+                <a class="block py-1.5 px-3.5 hover:bg-slate-100" href="#">idea</a>
+              </div>
+              <div class="py-1.5" role="none">
+                <a href="<%%#= destroy_auth_session_path %>" class="block w-full py-1.5 text-left px-3.5 hover:bg-slate-100" data-turbo="false">Sign
+                  out</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div data-action="click->web#profileSetting" class="flex cursor-pointer items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-200">
+          <img class="size-8 rounded-full bg-gray-50" src="<%%= vite_asset_path('assets/images/profile.jpeg') %>" alt="Kotaro Minami">
+          <span class="sr-only">Your profile</span>
+          <span aria-hidden="true">Kotaro Minami</span>
+        </div>
+      </li>
+    </ul>
+  </nav>
+</div>

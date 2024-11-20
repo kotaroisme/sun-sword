@@ -1,0 +1,90 @@
+# Template for the controller (controllers/controller.rb.tt)
+class <%= [@route_scope_class, @scope_class].join("::") %>Controller < ApplicationController
+  before_action :set_<%= @variable_subject %>, only: %i[show edit update destroy]
+  layout :set_layouts
+
+  # GET /<%= [@route_scope_path, @scope_path].join("/") %>
+  def index
+    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].join("::") %>
+    contract = use_case.contract!(build_contract({}))
+    result   = use_case.new(contract).result
+    @<%= @scope_path %> = Dry::Matcher::ResultMatcher.call(result) do |matcher|
+      matcher.success { |response| response }
+      matcher.failure { |errors| errors }
+    end
+    render '<%= @route_scope_path %>/<%= @scope_path %>/index'
+  end
+
+  # GET /<%= [@route_scope_path, @scope_path, ":uuid"].join("/") %>
+  def show
+  end
+
+  # GET /<%= [@route_scope_path, @scope_path, "new"].join("/") %>
+  def new
+    @<%= @variable_subject %> = <%= @model_class %>.new
+  end
+
+  # GET /<%= [@route_scope_path, @scope_path, ":uuid", "edit"].join("/") %>
+  def edit
+  end
+
+  # POST /<%= @route_scope_path %>/<%= @scope_path %>
+  def create
+    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].join("::") %>
+    contract = use_case.contract!(build_contract(<%= @variable_subject %>_params))
+    result   = use_case.new(contract).result
+    Dry::Matcher::ResultMatcher.call(result) do |matcher|
+      matcher.success do |response|
+        redirect_to <%= [@route_scope_path, @variable_subject].join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully created.'
+      end
+      matcher.failure do |errors|
+        @<%= @variable_subject %> = build_form_errors(<%= @variable_subject %>_params, <%= @model_class %>.new, errors)
+        render '<%= [@route_scope_path, @scope_path, "new"].join("/") %>', status: :unprocessable_entity
+      end
+    end
+  end
+
+  # PATCH/PUT /<%= [@route_scope_path, @scope_path, ":uuid"].join("/") %>
+  def update
+    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].join("::") %>
+    contract = use_case.contract!(build_contract(<%= @variable_subject %>_params).merge({ id: params[:id] }))
+    result   = use_case.new(contract).result
+    Dry::Matcher::ResultMatcher.call(result) do |matcher|
+      matcher.success do |response|
+        redirect_to <%= [@route_scope_path, @variable_subject].join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully updated.'
+      end
+      matcher.failure do |errors|
+        @<%= @variable_subject %> = build_form_errors(<%= @variable_subject %>_params, <%= @model_class %>.find(params[:id]), errors)
+        render '<%= [@route_scope_path, @scope_path, "edit"].join("/") %>', status: :unprocessable_entity
+      end
+    end
+  end
+
+  # DELETE /<%= [@route_scope_path, @scope_path, ":uuid"].join("/") %>
+  def destroy
+    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].join("::") %>
+    contract = use_case.contract!(build_contract({ id: params[:id] }))
+    result   = use_case.new(contract).result
+    Dry::Matcher::ResultMatcher.call(result) do |matcher|
+      matcher.success do |response|
+        redirect_to <%= [@route_scope_path, @scope_path].join("_") %>_url, notice: '<%= @subject_class %> was successfully destroyed.'
+      end
+      matcher.failure do |errors|
+        redirect_to <%= [@route_scope_path, @scope_path].join("_") %>_url, error: '<%= @subject_class %> could not be destroyed.'
+      end
+    end
+  end
+
+  private
+
+  # Use callbacks to share common setup or constraints between actions.
+  def set_<%= @variable_subject %>
+    @<%= @variable_subject %> = <%= @model_class %>.find_by(id: params[:id])
+    redirect_to <%= [@route_scope_path, @scope_path].join("_") %>_url, error: '<%= @subject_class %> not found.' if @<%= @variable_subject %>.nil?
+  end
+
+  # Only allow a list of trusted parameters through.
+  def <%= @variable_subject %>_params
+    params.require(:models_<%= @subject_class.underscore %>).permit(<%= strong_params %>)
+  end
+end

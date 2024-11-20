@@ -1,0 +1,3 @@
+<%%= turbo_frame_tag "comment_show" do %>
+  <p class="text-white"><%%= @comment %></p>
+<%% end %>

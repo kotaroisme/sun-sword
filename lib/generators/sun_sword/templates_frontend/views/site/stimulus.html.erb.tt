@@ -1,0 +1,26 @@
+<!--HTML from anywhere-->
+<container class="flex  flex-col h-screen items-center justify-center bg-orange-500" data-controller="site-stimulus">
+  <div class="w-full">
+    <div class="font-bold flex items-center justify-center">
+      <input data-site-stimulus-target="name" type="text" name="name" id="name" class="rounded-md border-0 py-1.5 text-orange-900 shadow-sm ring-1 ring-inset ring-orange-500 placeholder:text-orange-400 focus:ring-2 focus:ring-inset focus:ring-orange-500 mr-5" placeholder="Kotaro">
+      <button data-action="click->site-stimulus#greet" type="button" class="rounded-full bg-white p-2 text-orange-500 shadow-sm hover:bg-white-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500">
+        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon">
+          <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"/>
+        </svg>
+      </button>
+    </div>
+    <br>
+    <div class="font-bold flex items-center justify-center">
+      <span class="text-white text-[2rem]" data-site-stimulus-target="output">. . .</span><br/>
+    </div>
+  </div>
+  <div class="w-full">
+    <div class="comment flex items-center justify-center">
+      <%%= render partial: "site/comment" %>
+    </div>
+    <div class="action  flex items-center justify-center">
+      <%%= link_to "Kotaro", site_jadi_a_path, class: "class-button-outline m-2", data: { turbo_frame: "comment_show" } %>
+      <%%= link_to "Minami", site_jadi_b_path, class: "class-button-outline m-2", data: { turbo_frame: "comment_show" } %>
+    </div>
+  </div>
+</container>

@@ -1,0 +1,9 @@
+<%% if actions.include?(:show) %>
+  <%%= render "components/action_show", key: key, value: value %>
+<%% end %>
+<%% if actions.include?(:edit) %>
+  <%%= render "components/action_edit", key: key, value: value %>
+<%% end %>
+<%% if actions.include?(:destroy) %>
+  <%%= render "components/action_destroy", key: key, value: value, icon_class: "w-6 h-6", params: params %>
+<%% end %>

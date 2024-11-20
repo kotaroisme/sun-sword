@@ -1,0 +1,50 @@
+<div>
+  <div>
+    <%%= render "components/alert" %>
+  </div>
+  <div class="flow-root class-card-container">
+    <div class="flex items-center p-2 mb-10">
+      <div class="flex-auto">
+        <h1 class="font-semibold text-gray-900">List <%= @subject_class %></h1>
+        <p class="mt-2 text-sm text-gray-700">A list of all the <%= @subject_class %>.</p>
+      </div>
+      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+        <%%= link_to new_<%= [@route_scope_path, @scope_path.singularize].join("_") %>_path do %>
+          <button type="button" class="block class-button">Add user</button>
+        <%% end %>
+      </div>
+    </div>
+    <div class="overflow-x-auto sm:flex-auto">
+      <div class="inline-block min-w-full align-middle">
+        <table class="min-w-full divide-y divide-gray-300">
+          <thead>
+          <tr>
+            <%% <%= @controllers.list_fields.map { |tc| [tc.titleize.to_s, ''] + [["Action", "text-center"]]}%>.each do |title, attr_class| %>
+              <th scope="col" class="class-tr attr-class"><%%= title %></th>
+            <%% end %>
+            </th>
+          </tr>
+          </thead>
+          <tbody class="divide-y bg-white">
+          <%% @<%= @scope_path %>.response.each do |<%= @variable_subject %>| %>
+            <tr>
+<%@controllers.list_fields.each do |col| -%>
+              <td class="class-td">
+                <div class="flex items-center">
+                  <div>
+                    <div class="text-sm text-gray-900"><%%= <%= @variable_subject %>.name %></div>
+                  </div>
+                </div>
+              </td>
+<%end-%>
+              <td class="class-td text-center">
+                <%%= render "components/link_action", key: "<%= [@route_scope_path, @variable_subject].join("_") %>", value: user, actions: [:show, :edit, :destroy] %>
+              </td>
+            </tr>
+          <%% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

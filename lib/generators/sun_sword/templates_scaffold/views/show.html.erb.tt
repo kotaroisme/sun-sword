@@ -1,0 +1,26 @@
+<div>
+  <div class="flow-root class-card-container">
+    <div class="flex items-center p-2 mb-10">
+      <div class="flex-auto">
+        <h1 class="font-semibold text-gray-900">Information</h1>
+        <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">Details info from <%= @subject_class %> .</p>
+      </div>
+      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+        <%%= render "components/link_action", key: "<%= [@route_scope_path, @variable_subject].join("_") %>", value: @<%= @variable_subject %>, actions: [:edit, :destroy]  %>
+      </div>
+    </div>
+    <div class="border-t border-gray-100">
+      <dl class="divide-y divide-gray-100">
+<%@controllers.show_fields.each do |col| -%>
+        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-900"><%=col.titleize%></dt>
+          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0"><%%= @<%=@variable_subject%>.<%=col%> %></dd>
+        </div>
+<%end-%>
+      </dl>
+    </div>
+    <div class="mt-6 flex items-center justify-end gap-x-6">
+      <%%= link_to "Back", <%= [@route_scope_path, @scope_path].join("_") %>_path, class: "inline-flex justify-center class-button" %>
+    </div>
+  </div>
+</div>
