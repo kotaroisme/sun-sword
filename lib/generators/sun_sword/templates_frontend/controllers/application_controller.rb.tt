@@ -1,12 +1,16 @@
 class ApplicationController < ActionController::Base
+  add_flash_types :error, :success, :notice
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
   protected
 
+  def <%=SunSword.scope_owner_column%>
+    current_auth.account.id
+  end
+
   def build_contract(params)
-    # { "<%=RiderKick.scope_owner_column.to_s%>": current_auth.account.id SecureRandom.uuid }.merge(params)
-    { <%=RiderKick.scope_owner_column.to_s%>: SecureRandom.uuid }.merge(params)
+    { <%=SunSword.scope_owner_column.to_s%>: <%=SunSword.scope_owner_column.to_s%> }.merge(params)
   end
 
   def build_form_errors(params, model, errors)
@@ -31,6 +35,6 @@ class ApplicationController < ActionController::Base
 
   def set_layouts
     # "#{current_auth.user.role}/application"
-    'dashboard/application'
+    "owner/application"
   end
 end

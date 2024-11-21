@@ -3,6 +3,7 @@ module SunSword
     source_root File.expand_path('templates_scaffold', __dir__)
 
     argument :arg_structure, type: :string, default: '', banner: ''
+    argument :arg_scope, type: :hash, default: '', banner: 'scope:dashboard'
 
     def running
       validation!
@@ -16,9 +17,9 @@ module SunSword
     private
 
     def validation!
-      unless File.exist?('config/initializers/rider_kick.rb')
-        say 'Error must create init configuration for rider_kick!'
-        raise Thor::Error, 'run: bin/rails generate rider_kick:init'
+      unless File.exist?('config/initializers/sun_sword.rb')
+        say 'Error must create init configuration for sun_sword!'
+        raise Thor::Error, 'run: bin/rails generate sun_sword:init'
       end
     end
 
@@ -43,8 +44,6 @@ module SunSword
       @contract_destroy     = @services.action_destroy.use_case.contract || []
       @skipped_fields       = entity.skipped_fields || []
       @custom_fields        = entity.custom_fields || []
-      @route_scope_path = @structure.controllers.route_scope.downcase rescue ''
-      @route_scope_class = @route_scope_path.camelize rescue ''
 
       @variable_subject = model_name.split('::').last.underscore.downcase
       @scope_path       = resource_name.pluralize.underscore.downcase
@@ -52,6 +51,108 @@ module SunSword
       @model_class      = model_name.camelize.constantize
       @subject_class    = resource_name.camelize
       @fields           = contract_fields
+      @form_fields      = @controllers.form_fields
+
+      @route_scope_path = arg_scope['scope'].to_s.downcase rescue ''
+      @route_scope_class = @route_scope_path.camelize rescue ''
+
+      @mapping_fields = {
+        string:    :text_field,
+        text:      :text_area,
+        integer:   :number_field,
+        float:     :number_field,
+        decimal:   :number_field,
+        boolean:   :check_box,
+        date:      :date_select,
+        datetime:  :datetime_select,
+        timestamp: :datetime_select,
+        time:      :time_select,
+        enum:      :select,
+        file:      :file_field
+      }
+    end
+
+    def generate_form_fields_html
+      form_fields_html = ''
+      @form_fields.each do |field|
+        field_name     = field[:name]
+        field_type     = field[:type]
+        form_helper    = @mapping_fields[field_type] || :text_field
+        input_id       = "#{@variable_subject}_#{field_name}"
+        label_input_id = case form_helper
+        when :date_select, :datetime_select then "#{input_id}_1i" # Year
+        when :time_select then "#{input_id}_4i" # Hour
+        else input_id
+        end
+
+        field_html = <<-HTML
+
+        <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6">
+          <%= form.label :#{field_name}, for: '#{label_input_id}', class: "block text-sm font-medium text-gray-700 sm:pt-1.5" %>
+          <div class="mt-2 sm:col-span-2 sm:mt-0">
+        HTML
+
+        case form_helper
+        when :text_field, :number_field
+          field_html += <<-HTML
+            <%= form.#{form_helper} :#{field_name}, id: '#{input_id}', class: "block w-full rounded-md border-gray-300 py-1.5 text-gray-700 shadow-sm focus:ring-2 focus:ring-gray-300 focus:border-gray-300 sm:max-w-md sm:text-sm" %>
+          HTML
+        when :text_area
+          field_html += <<-HTML
+            <%= form.text_area :#{field_name}, id: '#{input_id}', rows: 3, class: "block w-full max-w-2xl rounded-md border-gray-300 py-1.5 text-gray-700 shadow-sm focus:ring-2 focus:ring-gray-300 focus:border-gray-300 sm:text-sm" %>
+          HTML
+        when :check_box
+          field_html += <<-HTML
+            <div class="relative flex items-start">
+              <div class="flex h-6 items-center">
+                <%= form.check_box :#{field_name}, id: '#{input_id}', class: "h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-300 focus:border-gray-300" %>
+              </div>
+              <div class="ml-3 text-sm">
+                <%= form.label :#{field_name}, for: '#{input_id}', class: "font-medium text-gray-700" %>
+              </div>
+          </div>
+          HTML
+        when :select
+          field_html += <<-HTML
+            <%= form.select :#{field_name}, options_for_select([['Option 1', 1], ['Option 2', 2]]), {}, { id: '#{input_id}', class: "block w-full rounded-md border-gray-300 py-1.5 text-gray-700 shadow-sm focus:ring-2 focus:ring-gray-300 focus:border-gray-300 sm:max-w-xs sm:text-sm" } %>
+          HTML
+        when :datetime_select, :date_select, :time_select
+          field_html += <<-HTML
+            <%= form.#{form_helper} :#{field_name}, { discard_second: true, id_prefix: '#{input_id}' }, { class: "text-gray-700 shadow-sm focus:ring-2 focus:ring-gray-300 focus:border-gray-300 sm:text-sm" } %>
+          HTML
+        when :file_field
+          field_html += <<-HTML
+            <div class="flex max-w-2xl justify-center rounded-lg border border-dashed border-gray-300 px-6 py-10">
+              <div class="text-center">
+                <!-- SVG Icon -->
+                  <svg class="mx-auto size-12 text-gray-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon">
+                    <path fill-rule="evenodd" d="M1.5 6a2.25 2.25 0 0 1 2.25-2.25h16.5A2.25 2.25 0 0 1 22.5 6v12a2.25 2.25 0 0 1-2.25 2.25H3.75A2.25 2.25 0 0 1 1.5 18V6ZM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0 0 21 18v-1.94l-2.69-2.689a1.5 1.5 0 0 0-2.12 0l-.88.879.97.97a.75.75 0 1 1-1.06 1.06l-5.16-5.159a1.5 1.5 0 0 0-2.12 0L3 16.061Zm10.125-7.81a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Z" clip-rule="evenodd" />
+                  </svg>
+                <div class="mt-4 flex text-sm text-gray-600">
+                  <label for="<%= '#{input_id}' %>" class="relative cursor-pointer rounded-md bg-white font-semibold text-gray-600 hover:text-gray-500">
+                    <span>Upload a file</span>
+                    <%= form.file_field :#{field_name}, id: '#{input_id}', class: "sr-only" %>
+                  </label>
+                  <p class="pl-1">or drag and drop</p>
+                </div>
+                <p class="text-xs text-gray-600">PNG, JPG, GIF, DOC etc.</p>
+              </div>
+            </div>
+          HTML
+        else
+          field_html += <<-HTML
+            <%= form.#{form_helper} :#{field_name}, id: '#{input_id}', class: "block w-full rounded-md border-gray-300 py-1.5 text-gray-700 shadow-sm focus:ring-2 focus:ring-gray-300 focus:border-gray-300 sm:max-w-md sm:text-sm" %>
+          HTML
+        end
+
+        field_html += <<-HTML
+          </div>
+        </div>
+        HTML
+
+        form_fields_html += field_html
+      end
+      form_fields_html
     end
 
     def build_usecase_filename(action, suffix = '')
@@ -67,6 +168,7 @@ module SunSword
     end
 
     def create_view_file
+      @form_fields_html = generate_form_fields_html
       template 'views/_form.html.erb.tt', File.join('app/views', @route_scope_path.to_s, @scope_path.to_s, '_form.html.erb')
       template 'views/edit.html.erb.tt', File.join('app/views', @route_scope_path.to_s, @scope_path.to_s, 'edit.html.erb')
       template 'views/index.html.erb.tt', File.join('app/views', @route_scope_path.to_s, @scope_path.to_s, 'index.html.erb')
@@ -74,23 +176,47 @@ module SunSword
       template 'views/show.html.erb.tt', File.join('app/views', @route_scope_path.to_s, @scope_path.to_s, 'show.html.erb')
     end
 
+    def namespace_exists?
+      routes_file   = 'config/routes.rb'
+      scope_pattern = "namespace :#{@route_scope_path} do\n"
+      if File.exist?(routes_file)
+        file_content = File.read(routes_file)
+        file_content.include?(scope_pattern)
+      else
+        false
+      end
+    end
+
     def create_link_file
       template 'views/components/menu/link.html.erb.tt', File.join('app/views/components/menu', "_link_to_#{@scope_path}.html.erb")
       link_to = "                <li><%= render 'components/menu/#{"link_to_#{@scope_path}"}' %></li>\n"
-      inject_into_file 'app/views/layouts/dashboard/_sidebar.html.erb', link_to, before: "                <%# generate_link %>\n"
+      inject_into_file 'app/views/components/layouts/_sidebar.html.erb', link_to, before: "                <%# generate_link %>\n"
+      routes_file = 'config/routes.rb'
+      if !namespace_exists? && @route_scope_path.present?
+        scope_code = <<-RUBY
+  namespace :#{@route_scope_path} do
+  end
+        RUBY
+        insert_into_file routes_file, scope_code, after: "Rails.application.routes.draw do\n"
+      end
+      if @route_scope_path.present?
+        inject_into_file routes_file, "    resources :#{@scope_path}\n", after: "namespace :#{@route_scope_path} do\n"
+      else
+        inject_into_file routes_file, "    resources :#{@scope_path}\n", after: "Rails.application.routes.draw do\n"
+      end
     end
 
     def contract_fields
       skip_contract_fields = @skipped_fields.map(&:strip).uniq
-      if RiderKick.scope_owner_column.present?
-        skip_contract_fields << RiderKick.scope_owner_column.to_s
+      if SunSword.scope_owner_column.present?
+        skip_contract_fields << SunSword.scope_owner_column.to_s
       end
       @model_class.columns.reject { |column| skip_contract_fields.include?(column.name.to_s) }.map(&:name).map(&:to_s)
     end
 
     def strong_params
       results = ''
-      @controllers.form_fields.map { |tc| results << ":#{tc}," }
+      @controllers.form_fields.map { |tc| results << ":#{tc.name}, " }
       results[0..-2]
     end
   end

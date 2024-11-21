@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
-require_relative 'sun_sword/version'
+require 'sun_sword/version'
+require 'sun_sword/configuration'
 
 module SunSword
-  # Your code goes here...
+  extend SunSword::Configuration
+  define_setting :scope_owner_column, ''
 end

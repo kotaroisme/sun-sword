@@ -1,4 +1,5 @@
 class SiteController < ApplicationController
+  layout :set_layouts
   def stimulus
     @comment = '- WELCOME -'
   end

@@ -13,11 +13,9 @@ module SunSword
     desc 'This generator installs Vite with Rails 7 configuration'
 
     def setup
+      validation!
       remove_assets_folder
       copy_assets_from_template
-
-      # copy_database_config
-      # copy_env_development
 
       add_vite_to_gemfile
       install_vite
@@ -28,9 +26,49 @@ module SunSword
       generate_controllers_site
       generate_components
       modify_layout_for_vite
+
+      setup_migration
+      setup_models
+      gem_dependencies
     end
 
     private
+
+    def gem_dependencies
+      # auth
+      # rails generate devise:install
+      # config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+      # devise_for :auths, class_name: "Models::Auth", controllers: {
+      #   sessions: 'auths/sessions'
+      # }
+      gem 'devise', '~> 4.9'
+
+      say 'Menjalankan bundle install...'
+      run 'bundle install'
+      run 'rails generate devise:install'
+      inject_into_file 'config/routes.rb', "  devise_for :auths, class_name: 'Models::Auth'\n", after: "Rails.application.routes.draw do\n"
+    end
+
+    def setup_migration
+      template 'db/migrate/20241117042039_devise_create_auths.rb', File.join('db/migrate/20241117042039_devise_create_auths.rb')
+      template 'db/migrate/20241117043154_create_models_accounts.rb', File.join('db/migrate/20241117043154_create_models_accounts.rb')
+      template 'db/migrate/20241117044142_create_models_users.rb', File.join('db/migrate/20241117044142_create_models_users.rb')
+
+      template 'db/seeds.rb', File.join('db/seeds.rb')
+    end
+
+    def setup_models
+      template 'models/models/account.rb', File.join('app/models/models/account.rb')
+      template 'models/models/auth.rb', File.join('app/models/models/auth.rb')
+      template 'models/models/user.rb', File.join('app/models/models/user.rb')
+    end
+
+    def validation!
+      unless File.exist?('config/initializers/sun_sword.rb')
+        say 'Error must create init configuration for sun_sword!'
+        raise Thor::Error, 'run: bin/rails generate sun_sword:init'
+      end
+    end
 
     def remove_assets_folder
       assets_path = "#{path_app}/assets"
@@ -47,18 +85,8 @@ module SunSword
       say "File '#{path_app}/assets' has been copied from template.", :green
     end
 
-    def copy_database_config
-      template 'config/database.yml', File.join('config/database.yml')
-    end
-
-    def copy_env_development
-      template 'env.development', File.join('.env.development')
-      template 'env.development', File.join('env.example')
-    end
-
     def add_vite_to_gemfile
       gem_dependencies = <<~RUBY
-
         # --- SunSword Package frontend
         gem "turbo-rails"
         gem "stimulus-rails"
@@ -120,10 +148,6 @@ module SunSword
   get "site/jadi_a"
   get "site/jadi_b"
 
-  namespace :dashboard do
-    get "site" => "site#index", as: :dashboard_site_index
-  end
-
       RUBY
       inject_into_file 'config/routes.rb', site_route, after: "Rails.application.routes.draw do\n"
 
@@ -139,9 +163,9 @@ module SunSword
       template 'views/site/_comment.html.erb.tt', 'app/views/site/_comment.html.erb'
       template 'views/layouts/application.html.erb.tt', 'app/views/layouts/application.html.erb'
 
-      directory('views/layouts/dashboard', 'app/views/layouts/dashboard')
+      template 'views/layouts/dashboard/application.html.erb.tt', 'app/views/layouts/owner/application.html.erb'
+      template 'views/layouts/dashboard/_sidebar.html.erb.tt', 'app/views/components/layouts/_sidebar.html.erb'
       directory('helpers', 'app/helpers')
-      template('controllers/dashboard/site_controller.rb', 'app/controllers/dashboard/site_controller.rb')
       say 'Updated application layout for Vite integration', :green
     end
   end

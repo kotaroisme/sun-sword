@@ -1,11 +1,11 @@
 # Template for the controller (controllers/controller.rb.tt)
-class <%= [@route_scope_class, @scope_class].join("::") %>Controller < ApplicationController
+class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") %>Controller < ApplicationController
   before_action :set_<%= @variable_subject %>, only: %i[show edit update destroy]
   layout :set_layouts
 
-  # GET /<%= [@route_scope_path, @scope_path].join("/") %>
+  # GET /<%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("/") %>
   def index
-    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].join("::") %>
+    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract({}))
     result   = use_case.new(contract).result
     @<%= @scope_path %> = Dry::Matcher::ResultMatcher.call(result) do |matcher|
@@ -15,62 +15,62 @@ class <%= [@route_scope_class, @scope_class].join("::") %>Controller < Applicati
     render '<%= @route_scope_path %>/<%= @scope_path %>/index'
   end
 
-  # GET /<%= [@route_scope_path, @scope_path, ":uuid"].join("/") %>
+  # GET /<%= [@route_scope_path, @scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
   def show
   end
 
-  # GET /<%= [@route_scope_path, @scope_path, "new"].join("/") %>
+  # GET /<%= [@route_scope_path, @scope_path, "new"].reject { |c| c.empty? }.join("/") %>
   def new
     @<%= @variable_subject %> = <%= @model_class %>.new
   end
 
-  # GET /<%= [@route_scope_path, @scope_path, ":uuid", "edit"].join("/") %>
+  # GET /<%= [@route_scope_path, @scope_path, ":uuid", "edit"].reject { |c| c.empty? }.join("/") %>
   def edit
   end
 
   # POST /<%= @route_scope_path %>/<%= @scope_path %>
   def create
-    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].join("::") %>
+    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract(<%= @variable_subject %>_params))
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
-        redirect_to <%= [@route_scope_path, @variable_subject].join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully created.'
+        redirect_to <%= [@route_scope_path, @variable_subject].reject { |c| c.empty? }.join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully created.'
       end
       matcher.failure do |errors|
         @<%= @variable_subject %> = build_form_errors(<%= @variable_subject %>_params, <%= @model_class %>.new, errors)
-        render '<%= [@route_scope_path, @scope_path, "new"].join("/") %>', status: :unprocessable_entity
+        render '<%= [@route_scope_path, @scope_path, "new"].reject { |c| c.empty? }.join("/") %>', status: :unprocessable_entity
       end
     end
   end
 
-  # PATCH/PUT /<%= [@route_scope_path, @scope_path, ":uuid"].join("/") %>
+  # PATCH/PUT /<%= [@route_scope_path, @scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
   def update
-    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].join("::") %>
+    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract(<%= @variable_subject %>_params).merge({ id: params[:id] }))
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
-        redirect_to <%= [@route_scope_path, @variable_subject].join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully updated.'
+        redirect_to <%= [@route_scope_path, @variable_subject].reject { |c| c.empty? }.join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully updated.'
       end
       matcher.failure do |errors|
         @<%= @variable_subject %> = build_form_errors(<%= @variable_subject %>_params, <%= @model_class %>.find(params[:id]), errors)
-        render '<%= [@route_scope_path, @scope_path, "edit"].join("/") %>', status: :unprocessable_entity
+        render '<%= [@route_scope_path, @scope_path, "edit"].reject { |c| c.empty? }.join("/") %>', status: :unprocessable_entity
       end
     end
   end
 
-  # DELETE /<%= [@route_scope_path, @scope_path, ":uuid"].join("/") %>
+  # DELETE /<%= [@route_scope_path, @scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
   def destroy
-    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].join("::") %>
+    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract({ id: params[:id] }))
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
-        redirect_to <%= [@route_scope_path, @scope_path].join("_") %>_url, notice: '<%= @subject_class %> was successfully destroyed.'
+        redirect_to <%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_url, notice: '<%= @subject_class %> was successfully destroyed.'
       end
       matcher.failure do |errors|
-        redirect_to <%= [@route_scope_path, @scope_path].join("_") %>_url, error: '<%= @subject_class %> could not be destroyed.'
+        redirect_to <%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_url, error: '<%= @subject_class %> could not be destroyed.'
       end
     end
   end
@@ -79,8 +79,12 @@ class <%= [@route_scope_class, @scope_class].join("::") %>Controller < Applicati
 
   # Use callbacks to share common setup or constraints between actions.
   def set_<%= @variable_subject %>
+<% if SunSword.scope_owner_column.present? -%>
+    @<%= @variable_subject %> = <%= @model_class %>.find_by(id: params[:id], <%=SunSword.scope_owner_column%>: <%=SunSword.scope_owner_column%>)
+<%else %>
     @<%= @variable_subject %> = <%= @model_class %>.find_by(id: params[:id])
-    redirect_to <%= [@route_scope_path, @scope_path].join("_") %>_url, error: '<%= @subject_class %> not found.' if @<%= @variable_subject %>.nil?
+<%end %>
+    redirect_to <%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_url, error: '<%= @subject_class %> not found.' if @<%= @variable_subject %>.nil?
   end
 
   # Only allow a list of trusted parameters through.

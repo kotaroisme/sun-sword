@@ -9,7 +9,7 @@
         <p class="mt-2 text-sm text-gray-700">A list of all the <%= @subject_class %>.</p>
       </div>
       <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-        <%%= link_to new_<%= [@route_scope_path, @scope_path.singularize].join("_") %>_path do %>
+        <%%= link_to new_<%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_path do %>
           <button type="button" class="block class-button">Add user</button>
         <%% end %>
       </div>
@@ -28,17 +28,17 @@
           <tbody class="divide-y bg-white">
           <%% @<%= @scope_path %>.response.each do |<%= @variable_subject %>| %>
             <tr>
-<%@controllers.list_fields.each do |col| -%>
+<%@controllers.list_fields.each do |field| -%>
               <td class="class-td">
                 <div class="flex items-center">
                   <div>
-                    <div class="text-sm text-gray-900"><%%= <%= @variable_subject %>.name %></div>
+                    <div class="text-sm text-gray-900"><%%= <%= @variable_subject %>.<%=field %> %></div>
                   </div>
                 </div>
               </td>
 <%end-%>
               <td class="class-td text-center">
-                <%%= render "components/link_action", key: "<%= [@route_scope_path, @variable_subject].join("_") %>", value: user, actions: [:show, :edit, :destroy] %>
+                <%%= render "components/link_action", key: "<%= [@route_scope_path, @variable_subject].reject { |c| c.empty? }.join("_") %>", value: <%= @variable_subject %>, actions: [:show, :edit, :destroy] %>
               </td>
             </tr>
           <%% end %>

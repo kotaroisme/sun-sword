@@ -1,22 +1,17 @@
-<%%= form_with(model: <%= @variable_subject %>, url: ((["new", "create"].include? action_name) ? <%= [@route_scope_path, @scope_path].join("_") %>_path : <%= [@route_scope_path, @scope_path.singularize].join("_") %>_path(<%= @variable_subject %>)), class: "contents") do |form| %>
+<%%= form_with(model: <%= @variable_subject %>, url: ((["new", "create"].include? action_name) ? <%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_path : <%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_path(<%= @variable_subject %>)), class: "contents") do |form| %>
 
   <%%= render "components/error_form_submit", resource: <%= @variable_subject %> if <%= @variable_subject %>.errors.any? %>
 
   <div class="space-y-12 sm:space-y-16">
     <div>
       <div class="mt-10 space-y-8 pb-12 sm:space-y-0 sm:pb-0 p-4 class-card-container">
-        <div class="class-input">
-          <%%= form.label :name, class: "class-label" %>
-          <div class="mt-2 sm:col-span-2 sm:mt-0">
-            <%%= form.text_field :name, class: "class-text-field" %>
-          </div>
-        </div>
+        <%= @form_fields_html %>
       </div>
     </div>
   </div>
 
   <div class="mt-6 flex items-center justify-end gap-x-6">
-    <%%= link_to "Back", <%= [@route_scope_path, @scope_path].join("_") %>_path, class: "inline-flex justify-center class-button" %>
+    <%%= link_to "Back", <%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_path, class: "inline-flex justify-center class-button" %>
     <%%= form.submit class: "inline-flex justify-center class-button" %>
   </div>
 <%% end %>
