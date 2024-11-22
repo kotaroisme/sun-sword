@@ -1,6 +1,6 @@
 # Template for the controller (controllers/controller.rb.tt)
 class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") %>Controller < ApplicationController
-  before_action :set_<%= @variable_subject %>, only: %i[show edit update destroy]
+  before_action :set_<%= @variable_subject %>, only: %i[edit update]
   layout :set_layouts
 
   # GET /<%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("/") %>
@@ -8,7 +8,7 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
     use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract({}))
     result   = use_case.new(contract).result
-    @<%= @scope_path %> = Dry::Matcher::ResultMatcher.call(result) do |matcher|
+    @<%= @variable_subject %> = Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success { |response| response }
       matcher.failure { |errors| errors }
     end
@@ -17,6 +17,13 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
 
   # GET /<%= [@route_scope_path, @scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
   def show
+    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>
+    contract = use_case.contract!(build_contract({ id: params[:id] }))
+    result   = use_case.new(contract).result
+    @<%= @scope_path %> = Dry::Matcher::ResultMatcher.call(result) do |matcher|
+      matcher.success { |response| response }
+      matcher.failure { |errors| errors }
+    end
   end
 
   # GET /<%= [@route_scope_path, @scope_path, "new"].reject { |c| c.empty? }.join("/") %>

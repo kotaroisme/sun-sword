@@ -68,15 +68,16 @@ module SunSword
         timestamp: :datetime_select,
         time:      :time_select,
         enum:      :select,
-        file:      :file_field
+        file:      :file_field,
+        files:     :file_fields
       }
     end
 
     def generate_form_fields_html
       form_fields_html = ''
       @form_fields.each do |field|
-        field_name     = field[:name]
-        field_type     = field[:type]
+        field_name     = field[:name].to_sym
+        field_type     = field[:type].to_sym
         form_helper    = @mapping_fields[field_type] || :text_field
         input_id       = "#{@variable_subject}_#{field_name}"
         label_input_id = case form_helper
@@ -84,7 +85,6 @@ module SunSword
         when :time_select then "#{input_id}_4i" # Hour
         else input_id
         end
-
         field_html = <<-HTML
 
         <div class="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6">
@@ -119,6 +119,25 @@ module SunSword
         when :datetime_select, :date_select, :time_select
           field_html += <<-HTML
             <%= form.#{form_helper} :#{field_name}, { discard_second: true, id_prefix: '#{input_id}' }, { class: "text-gray-700 shadow-sm focus:ring-2 focus:ring-gray-300 focus:border-gray-300 sm:text-sm" } %>
+          HTML
+        when :file_fields
+          field_html += <<-HTML
+            <div class="flex max-w-2xl justify-center rounded-lg border border-dashed border-gray-300 px-6 py-10">
+              <div class="text-center">
+                <!-- SVG Icon -->
+                  <svg class="mx-auto size-12 text-gray-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon">
+                    <path fill-rule="evenodd" d="M1.5 6a2.25 2.25 0 0 1 2.25-2.25h16.5A2.25 2.25 0 0 1 22.5 6v12a2.25 2.25 0 0 1-2.25 2.25H3.75A2.25 2.25 0 0 1 1.5 18V6ZM3 16.06V18c0 .414.336.75.75.75h16.5A.75.75 0 0 0 21 18v-1.94l-2.69-2.689a1.5 1.5 0 0 0-2.12 0l-.88.879.97.97a.75.75 0 1 1-1.06 1.06l-5.16-5.159a1.5 1.5 0 0 0-2.12 0L3 16.061Zm10.125-7.81a1.125 1.125 0 1 1 2.25 0 1.125 1.125 0 0 1-2.25 0Z" clip-rule="evenodd" />
+                  </svg>
+                <div class="mt-4 flex text-sm text-gray-600">
+                  <label for="<%= '#{input_id}' %>" class="relative cursor-pointer rounded-md bg-white font-semibold text-gray-600 hover:text-gray-500">
+                    <span>Upload a file</span>
+                    <%= form.file_field :#{field_name}, id: '#{input_id}', class: "sr-only", multiple: true %>
+                  </label>
+                  <p class="pl-1">or drag and drop</p>
+                </div>
+                <p class="text-xs text-gray-600">PNG, JPG, GIF, DOC etc.</p>
+              </div>
+            </div>
           HTML
         when :file_field
           field_html += <<-HTML
@@ -216,7 +235,13 @@ module SunSword
 
     def strong_params
       results = ''
-      @controllers.form_fields.map { |tc| results << ":#{tc.name}, " }
+      @controllers.form_fields.each do |field|
+        if field.type.to_s.eql?('files')
+          results << "{ #{field.name}: [] }, "
+        else
+          results << ":#{field.name}, "
+        end
+      end
       results[0..-2]
     end
   end
