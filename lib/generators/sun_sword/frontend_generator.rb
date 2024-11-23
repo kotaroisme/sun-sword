@@ -50,9 +50,9 @@ module SunSword
     end
 
     def setup_migration
-      template 'db/migrate/20241117042039_devise_create_auths.rb', File.join('db/migrate/20241117042039_devise_create_auths.rb')
-      template 'db/migrate/20241117043154_create_models_accounts.rb', File.join('db/migrate/20241117043154_create_models_accounts.rb')
-      template 'db/migrate/20241117044142_create_models_users.rb', File.join('db/migrate/20241117044142_create_models_users.rb')
+      template 'db/migrate/20241117042039_devise_create_auths.rb', File.join("db/migrate/#{Time.now.strftime('%Y%m%d%H%M')}11_devise_create_auths.rb")
+      template 'db/migrate/20241117043154_create_models_accounts.rb', File.join("db/migrate/#{Time.now.strftime('%Y%m%d%H%M')}22_create_models_accounts.rb")
+      template 'db/migrate/20241117044142_create_models_users.rb', File.join("db/migrate/#{Time.now.strftime('%Y%m%d%H%M')}33_create_models_users.rb")
 
       template 'db/seeds.rb', File.join('db/seeds.rb')
     end
