@@ -10,7 +10,7 @@
       </div>
       <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
         <%%= link_to new_<%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_path do %>
-          <button type="button" class="block class-button">Add user</button>
+          <button type="button" class="block class-button">Add <%= @subject_class %></button>
         <%% end %>
       </div>
     </div>

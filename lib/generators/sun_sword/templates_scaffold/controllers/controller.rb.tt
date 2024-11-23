@@ -93,7 +93,11 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
   private
 
   def build_contract(params)
+<%if @resource_owner_id.present? -%>
     { <%=@resource_owner_id%>: <%=@resource_owner_id%> }.merge(params)
+<%else -%>
+    {}.merge(params)
+<%end -%>
   end
 
   # Use callbacks to share common setup or constraints between actions.
