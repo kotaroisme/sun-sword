@@ -6,7 +6,6 @@ module SunSword
     argument :arg_scope, type: :hash, default: '', banner: 'scope:dashboard'
 
     def running
-      validation!
       setup_variables
       create_root_folder
       create_controller_file
@@ -15,13 +14,6 @@ module SunSword
     end
 
     private
-
-    def validation!
-      unless File.exist?('config/initializers/sun_sword.rb')
-        say 'Error must create init configuration for sun_sword!'
-        raise Thor::Error, 'run: bin/rails generate sun_sword:init'
-      end
-    end
 
     def setup_variables
       config     = YAML.load_file("db/structures/#{arg_structure}_structure.yaml")
@@ -33,6 +25,7 @@ module SunSword
       entity        = @structure.entity || {}
 
       @actor                = @structure.actor
+      @resource_owner_id    = @structure.resource_owner_id
       @uploaders            = @structure.uploaders || []
       @search_able          = @structure.search_able || []
       @services             = @structure.domains || {}
@@ -221,15 +214,12 @@ module SunSword
       if @route_scope_path.present?
         inject_into_file routes_file, "    resources :#{@scope_path}\n", after: "namespace :#{@route_scope_path} do\n"
       else
-        inject_into_file routes_file, "    resources :#{@scope_path}\n", after: "Rails.application.routes.draw do\n"
+        inject_into_file routes_file, "  resources :#{@scope_path}\n", after: "Rails.application.routes.draw do\n"
       end
     end
 
     def contract_fields
       skip_contract_fields = @skipped_fields.map(&:strip).uniq
-      if SunSword.scope_owner_column.present?
-        skip_contract_fields << SunSword.scope_owner_column.to_s
-      end
       @model_class.columns.reject { |column| skip_contract_fields.include?(column.name.to_s) }.map(&:name).map(&:to_s)
     end
 

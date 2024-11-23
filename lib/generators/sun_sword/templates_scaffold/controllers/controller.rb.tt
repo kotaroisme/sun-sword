@@ -8,11 +8,15 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
     use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract({}))
     result   = use_case.new(contract).result
-    @<%= @variable_subject %> = Dry::Matcher::ResultMatcher.call(result) do |matcher|
-      matcher.success { |response| response }
-      matcher.failure { |errors| errors }
+    Dry::Matcher::ResultMatcher.call(result) do |matcher|
+      matcher.success do |response|
+        @<%= @scope_path %> = response
+        render '<%= @route_scope_path %>/<%= @scope_path %>/index'
+      end
+      matcher.failure do |errors|
+        redirect_to root_path, success: errors
+      end
     end
-    render '<%= @route_scope_path %>/<%= @scope_path %>/index'
   end
 
   # GET /<%= [@route_scope_path, @scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
@@ -20,9 +24,13 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
     use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract({ id: params[:id] }))
     result   = use_case.new(contract).result
-    @<%= @scope_path %> = Dry::Matcher::ResultMatcher.call(result) do |matcher|
-      matcher.success { |response| response }
-      matcher.failure { |errors| errors }
+    Dry::Matcher::ResultMatcher.call(result) do |matcher|
+      matcher.success do |response|
+        @<%= @variable_subject %> = response
+      end
+      matcher.failure do |errors|
+        redirect_to root_path, success: errors
+      end
     end
   end
 
@@ -84,10 +92,14 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
 
   private
 
+  def build_contract(params)
+    { <%=@resource_owner_id%>: <%=@resource_owner_id%> }.merge(params)
+  end
+
   # Use callbacks to share common setup or constraints between actions.
   def set_<%= @variable_subject %>
-<% if SunSword.scope_owner_column.present? -%>
-    @<%= @variable_subject %> = <%= @model_class %>.find_by(id: params[:id], <%=SunSword.scope_owner_column%>: <%=SunSword.scope_owner_column%>)
+<% if @resource_owner_id.present? -%>
+    @<%= @variable_subject %> = <%= @model_class %>.find_by(id: params[:id], <%=@resource_owner_id%>: <%=@resource_owner_id%>)
 <%else %>
     @<%= @variable_subject %> = <%= @model_class %>.find_by(id: params[:id])
 <%end %>

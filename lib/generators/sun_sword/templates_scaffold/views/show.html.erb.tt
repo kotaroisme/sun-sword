@@ -12,10 +12,31 @@
     <div class="border-t border-gray-100">
       <dl class="divide-y divide-gray-100">
 <%@controllers.show_fields.each do |col| -%>
+<%if @uploaders.include?(col)-%>
+        <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+          <dt class="text-sm font-medium text-gray-900"><%=col.titleize%></dt>
+          <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+            <section class="overflow-hidden text-gray-700 ">
+              <div class="container px-5 py-2 mx-auto">
+                <div class="flex flex-wrap -m-1 md:-m-2">
+                  <div class="flex flex-wrap w-1/1">
+                    <%%=  [@<%=@variable_subject%>.<%=col%>].flatten.each do |asset| %>
+                      <div class="w-1/3 p-1 md:p-2">
+                        <img alt="<%=col.titleize%>" class="block object-cover object-center w-100 rounded-lg" src="<%%= asset %>">
+                      </div>
+                    <%% end %>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </dd>
+        </div>
+<%else-%>
         <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
           <dt class="text-sm font-medium text-gray-900"><%=col.titleize%></dt>
           <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0"><%%= @<%=@variable_subject%>.<%=col%> %></dd>
         </div>
+<%end-%>
 <%end-%>
       </dl>
     </div>

@@ -5,13 +5,12 @@ class ApplicationController < ActionController::Base
 
   protected
 
-  def <%=SunSword.scope_owner_column%>
-    current_auth.account.id
-  end
+  # Adjust the value of <resource_owner_id> in db/structures/<resource>_structure.yaml
+  # Ignore this comment if you haven't generated the structure yet
 
-  def build_contract(params)
-    { <%=SunSword.scope_owner_column.to_s%>: <%=SunSword.scope_owner_column.to_s%> }.merge(params)
-  end
+  #def <resource_owner_id>
+  #   current_auth.<resource_owner_id>
+  #end
 
   def build_form_errors(params, model, errors)
     params.keys.each do |key|
@@ -35,6 +34,6 @@ class ApplicationController < ActionController::Base
 
   def set_layouts
     # "#{current_auth.user.role}/application"
-    "owner/application"
+    'owner/application'
   end
 end

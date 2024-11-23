@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    sun-sword (0.0.5)
+    sun-sword (0.0.6)
 
 GEM
   remote: https://rubygems.org/

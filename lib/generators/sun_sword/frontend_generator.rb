@@ -10,11 +10,9 @@ module SunSword
       end
     end
 
-    desc 'This generator installs Vite with Rails 7 configuration'
+    desc 'This generator installs Vite with Rails 8 configuration'
 
     def setup
-      validation!
-      remove_assets_folder
       copy_assets_from_template
 
       add_vite_to_gemfile
@@ -26,49 +24,9 @@ module SunSword
       generate_controllers_site
       generate_components
       modify_layout_for_vite
-
-      setup_migration
-      setup_models
-      gem_dependencies
     end
 
     private
-
-    def gem_dependencies
-      # auth
-      # rails generate devise:install
-      # config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
-      # devise_for :auths, class_name: "Models::Auth", controllers: {
-      #   sessions: 'auths/sessions'
-      # }
-      gem 'devise', '~> 4.9'
-
-      say 'Menjalankan bundle install...'
-      run 'bundle install'
-      run 'rails generate devise:install'
-      inject_into_file 'config/routes.rb', "  devise_for :auths, class_name: 'Models::Auth'\n", after: "Rails.application.routes.draw do\n"
-    end
-
-    def setup_migration
-      template 'db/migrate/20241117042039_devise_create_auths.rb', File.join("db/migrate/#{Time.now.strftime('%Y%m%d%H%M')}11_devise_create_auths.rb")
-      template 'db/migrate/20241117043154_create_models_accounts.rb', File.join("db/migrate/#{Time.now.strftime('%Y%m%d%H%M')}22_create_models_accounts.rb")
-      template 'db/migrate/20241117044142_create_models_users.rb', File.join("db/migrate/#{Time.now.strftime('%Y%m%d%H%M')}33_create_models_users.rb")
-
-      template 'db/seeds.rb', File.join('db/seeds.rb')
-    end
-
-    def setup_models
-      template 'models/models/account.rb', File.join('app/models/models/account.rb')
-      template 'models/models/auth.rb', File.join('app/models/models/auth.rb')
-      template 'models/models/user.rb', File.join('app/models/models/user.rb')
-    end
-
-    def validation!
-      unless File.exist?('config/initializers/sun_sword.rb')
-        say 'Error must create init configuration for sun_sword!'
-        raise Thor::Error, 'run: bin/rails generate sun_sword:init'
-      end
-    end
 
     def remove_assets_folder
       assets_path = "#{path_app}/assets"
@@ -144,6 +102,7 @@ module SunSword
       template 'controllers/application_controller.rb.tt', File.join('app/controllers/application_controller.rb')
       site_route = <<-RUBY
 
+  default_url_options :host => "#{ENV['BASE_URL']}"
   root "site#stimulus"
   get "site/jadi_a"
   get "site/jadi_b"
