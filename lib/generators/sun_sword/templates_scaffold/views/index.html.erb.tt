@@ -9,8 +9,10 @@
         <p class="mt-2 text-sm text-gray-700">A list of all the <%= @subject_class %>.</p>
       </div>
       <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-        <%%= link_to new_<%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_path do %>
-          <button type="button" class="block class-button">Add <%= @subject_class %></button>
+        <%% if Rails.application.routes.url_helpers.respond_to?(:new_<%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_path) %>
+          <%%= link_to new_<%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_path do %>
+            <button type="button" class="block class-button">Add <%= @subject_class %></button>
+          <%% end %>
         <%% end %>
       </div>
     </div>
@@ -19,7 +21,7 @@
         <table class="min-w-full divide-y divide-gray-300">
           <thead>
           <tr>
-            <%% <%= @controllers.list_fields.map { |tc| [tc.titleize.to_s, ''] + [["Action", "text-center"]]}%>.each do |title, attr_class| %>
+            <%% <%= @controllers.list_fields.map { |tc| [tc.titleize.to_s, '']} + [["Action", "text-center"]]%>.each do |title, attr_class| %>
               <th scope="col" class="class-tr attr-class"><%%= title %></th>
             <%% end %>
             </th>

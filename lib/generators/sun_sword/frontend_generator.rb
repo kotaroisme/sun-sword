@@ -102,7 +102,7 @@ module SunSword
       template 'controllers/application_controller.rb.tt', File.join('app/controllers/application_controller.rb')
       site_route = <<-RUBY
 
-  default_url_options :host => "#{ENV['BASE_URL']}"
+  default_url_options :host => "ENV['BASE_URL']"
   root "site#stimulus"
   get "site/jadi_a"
   get "site/jadi_b"

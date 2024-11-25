@@ -104,9 +104,9 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
   def set_<%= @variable_subject %>
 <% if @resource_owner_id.present? -%>
     @<%= @variable_subject %> = <%= @model_class %>.find_by(id: params[:id], <%=@resource_owner_id%>: <%=@resource_owner_id%>)
-<%else %>
+<%else -%>
     @<%= @variable_subject %> = <%= @model_class %>.find_by(id: params[:id])
-<%end %>
+<%end -%>
     redirect_to <%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_url, error: '<%= @subject_class %> not found.' if @<%= @variable_subject %>.nil?
   end
 
