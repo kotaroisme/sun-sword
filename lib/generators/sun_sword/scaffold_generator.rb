@@ -41,8 +41,9 @@ module SunSword
       @variable_subject = model_name.split('::').last.underscore.downcase
       @scope_path       = resource_name.pluralize.underscore.downcase
       @scope_class      = @scope_path.camelize
+      @scope_subject    = @scope_path.singularize
       @model_class      = model_name.camelize.constantize
-      @subject_class    = resource_name.camelize
+      @subject_class    = @variable_subject.camelize
       @fields           = contract_fields
       @form_fields      = @controllers.form_fields
 

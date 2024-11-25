@@ -26,7 +26,7 @@
           </tr>
           </thead>
           <tbody class="divide-y bg-white">
-          <%% @<%= @scope_path %>.response.each do |<%= @variable_subject %>| %>
+          <%% @<%= @variable_subject.pluralize %>.response.each do |<%= @variable_subject %>| %>
             <tr>
 <%@controllers.list_fields.each do |field| -%>
               <td class="class-td">
@@ -38,7 +38,7 @@
               </td>
 <%end-%>
               <td class="class-td text-center">
-                <%%= render "components/link_action", key: "<%= [@route_scope_path, @variable_subject].reject { |c| c.empty? }.join("_") %>", value: <%= @variable_subject %>, actions: [:show, :edit, :destroy] %>
+                <%%= render "components/link_action", key: "<%= [@route_scope_path, @scope_subject].reject { |c| c.empty? }.join("_") %>", value: <%= @variable_subject %>, actions: [:show, :edit, :destroy] %>
               </td>
             </tr>
           <%% end %>

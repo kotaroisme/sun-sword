@@ -10,7 +10,7 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
-        @<%= @scope_path %> = response
+        @<%= @variable_subject.pluralize %> = response
         render '<%= @route_scope_path %>/<%= @scope_path %>/index'
       end
       matcher.failure do |errors|
@@ -50,7 +50,7 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
-        redirect_to <%= [@route_scope_path, @variable_subject].reject { |c| c.empty? }.join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully created.'
+        redirect_to <%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully created.'
       end
       matcher.failure do |errors|
         @<%= @variable_subject %> = build_form_errors(<%= @variable_subject %>_params, <%= @model_class %>.new, errors)
@@ -66,7 +66,7 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
-        redirect_to <%= [@route_scope_path, @variable_subject].reject { |c| c.empty? }.join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully updated.'
+        redirect_to <%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully updated.'
       end
       matcher.failure do |errors|
         @<%= @variable_subject %> = build_form_errors(<%= @variable_subject %>_params, <%= @model_class %>.find(params[:id]), errors)
