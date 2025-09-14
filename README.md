@@ -16,7 +16,7 @@ gem 'sun-sword'
 And then execute:
 ```bash
     $ rails generate sun_sword:frontend
-    $ rubocop -a
+    $ rubocop -A
 ```
 ## Usage
 ```bash
@@ -25,6 +25,7 @@ Description:
 
 Example:
     To Generate Frontend:
+        bin/rails  generate sun_sword:init
         bin/rails  generate sun_sword:frontend --setup
         
     To Generate scaffold:

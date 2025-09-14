@@ -61,7 +61,7 @@ module SunSword
     def install_vite
       template 'package.json', 'package.json'
       run 'bundle exec vite install'
-      run 'yarn add -D vite vite-plugin-full-reload vite-plugin-ruby vite-plugin-stimulus-hmr animatejs'
+      run 'yarn add -D vite vite-plugin-full-reload vite-plugin-ruby vite-plugin-stimulus-hmr'
       run 'yarn add  path stimulus-vite-helpers @hotwired/stimulus @hotwired/turbo-rails @tailwindcss/aspect-ratio @tailwindcss/forms @tailwindcss/line-clamp @tailwindcss/typography @tailwindcss/vite tailwindcss vite-plugin-rails autoprefixer'
       run 'yarn add -D eslint prettier eslint-plugin-prettier eslint-config-prettier eslint-plugin-tailwindcss'
       say 'Vite installed successfully', :green
