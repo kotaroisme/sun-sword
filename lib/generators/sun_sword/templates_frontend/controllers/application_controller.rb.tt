@@ -34,6 +34,10 @@ class ApplicationController < ActionController::Base
 
   def set_layouts
     # "#{current_auth.user.role}/application"
-    'owner/application'
+    'application'
   end
+
+    def ensure_turbo_frame!
+      turbo_frame_request? || turbo_native_app?
+    end
 end

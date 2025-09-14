@@ -1,6 +1,14 @@
 # Omakase Ruby styling for Rails
 inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 
+# Load extensions via Plugin API (bukan `require:`)
+plugins:
+  - rubocop-rails
+  - rubocop-performance
+  # tambahkan jika dipakai:
+  # - rubocop-rspec
+  # - rubocop-minitest
+
 # Overwrite or add rules to create your own house style
 #
 # # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
@@ -9,7 +17,7 @@ inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 
 AllCops:
   SuggestExtensions: false
-  TargetRubyVersion: 3.3.4
+  TargetRubyVersion: 3.3
   DisabledByDefault: true
   Exclude:
     - '**/templates/**/*'
@@ -524,9 +532,6 @@ Lint/ShadowedException:
   Enabled: true
 
 Lint/RedundantStringCoercion:
-  Enabled: true
-
-Lint/Syntax:
   Enabled: true
 
 Lint/UnderscorePrefixedVariableName:

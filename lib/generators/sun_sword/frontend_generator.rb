@@ -49,6 +49,10 @@ module SunSword
         gem "turbo-rails"
         gem "stimulus-rails"
         gem "vite_rails"
+
+        group :development do
+          gem "listen"
+        end
       RUBY
       append_to_file('Gemfile', gem_dependencies)
       say 'Vite Rails gem added and bundle installed', :green
@@ -57,10 +61,9 @@ module SunSword
     def install_vite
       template 'package.json', 'package.json'
       run 'bundle exec vite install'
-      run 'yarn add -D sass vite-plugin-full-reload vite-plugin-ruby vite-plugin-stimulus-hmr'
-      run 'yarn add -D tailwindcss @tailwindcss/forms @tailwindcss/typography @tailwindcss/aspect-ratio @tailwindcss/forms @tailwindcss/line-clamp autoprefixer'
-      run 'yarn add -D eslint prettier eslint-plugin-prettier eslint-config-prettier eslint-plugin-tailwindcss path'
-      run 'yarn add @hotwired/stimulus @hotwired/turbo-rails stimulus-vite-helpers vite animejs stimulus-use'
+      run 'yarn add -D vite vite-plugin-full-reload vite-plugin-ruby vite-plugin-stimulus-hmr animatejs'
+      run 'yarn add  path stimulus-vite-helpers @hotwired/stimulus @hotwired/turbo-rails @tailwindcss/aspect-ratio @tailwindcss/forms @tailwindcss/line-clamp @tailwindcss/typography @tailwindcss/vite tailwindcss vite-plugin-rails autoprefixer'
+      run 'yarn add -D eslint prettier eslint-plugin-prettier eslint-config-prettier eslint-plugin-tailwindcss'
       say 'Vite installed successfully', :green
     end
 
@@ -68,8 +71,6 @@ module SunSword
       say 'Configuring Vite...'
 
       # Add a basic Vite configuration file to your Rails app
-      template 'tailwind.config.js', 'tailwind.config.js'
-      template 'postcss.config.js', 'postcss.config.js'
       template 'vite.config.ts.tt', 'vite.config.ts'
       template 'Procfile.dev', 'Procfile.dev'
       template 'bin/watch', 'bin/watch'

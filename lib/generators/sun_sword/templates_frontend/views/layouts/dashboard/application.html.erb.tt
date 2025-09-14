@@ -10,37 +10,41 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Preahvihear&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/x-icon" href="<%%= vite_asset_path('assets/images/kotaro.ico') %>">
+  <link rel="icon" type="image/x-icon" href="<%= vite_asset_path('assets/images/kotaro.ico') %>">
 
-  <%%= csrf_meta_tags %>
-  <%%= csp_meta_tag %>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-  <%%= vite_client_tag %>
-  <%%= vite_javascript_tag 'application', data: { "turbo-track": "reload" } %>
+  <%= vite_client_tag %>
+  <%= vite_javascript_tag "application", "data-turbo-track": "reload", defer: true %>
 </head>
 
 <body class="h-full" data-turbo="true">
 <div id="root" data-controller="web" class="flex flex-col h-screen">
-  <div id="BASE_URL" class="hidden" data-base-url="<%%= ENV['BASE_URL'] %>"></div>
+  <div id="BASE_URL" class="hidden" data-base-url="<%= ENV['BASE_URL'] %>"></div>
   <main>
     <div class="mx-auto max-w-full">
       <div class="relative isolate flex min-h-svh w-full bg-white max-lg:flex-col lg:bg-zinc-100 dark:bg-zinc-900 dark:lg:bg-zinc-950">
 
-        <%%# mobile %>
-        <div class="fixed bg-white rounded-2xl m-2 inset-y-0 w-64 -left-[300px] lg:hidden sidebar side_hide z-50" data-action="click->web#onSidebarClick">
+        <%# mobile %>
+        <div
+                class="fixed inset-y-0 left-0 z-50 w-64 max-w-[85vw] bg-white rounded-2xl m-2
+         -translate-x-full will-change-transform transition-transform duration-300 ease-out
+         lg:hidden sidebar"
+                data-action="click->web#onSidebarClick">
           <nav class="flex h-full min-h-0 flex-col">
-            <%%= render "components/layouts/sidebar", from: :mobile %>
+            <%= render "components/layouts/sidebar", from: :mobile %>
           </nav>
         </div>
 
-        <%%# browser %>
+        <%# browser %>
         <div class="fixed inset-y-0 w-64 max-lg:hidden">
           <nav class="flex h-full min-h-0 flex-col">
-            <%%= render "components/layouts/sidebar", from: :browser %>
+            <%= render "components/layouts/sidebar", from: :browser %>
           </nav>
         </div>
 
-        <%%# Sidebar Toggle %>
+        <%# Sidebar Toggle %>
         <div class="flex items-center px-4 lg:hidden sidebar-toggle-open">
           <div class="py-2.5">
             <button type="button" class="hover:bg-gray-100 rounded-lg p-2.5 mt-2 m-1 text-gray-700 lg:hidden cursor-pointer" data-action="click->web#sidebarToggle">
@@ -53,10 +57,13 @@
         </div>
 
         <main class="flex flex-1 flex-col pb-2 lg:min-w-0 lg:pl-64 lg:pr-2 lg:pt-2">
-          <div class="fixed inset-0 bg-gray-900 backdrop-blur-lg backdrop-active opacity-0 hidden lg:hidden" aria-hidden="true"></div>
+          <div
+                  class="fixed inset-0 z-40 bg-black/50 opacity-0 pointer-events-none
+         transition-opacity duration-300 ease-out backdrop-active lg:hidden hidden"
+                  aria-hidden="true"></div>
           <div class="grow p-6 lg:rounded-lg lg:bg-white lg:p-10 lg:shadow-sm lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
             <div class="mx-auto max-w-6xl">
-              <%%= yield %>
+              <%= yield %>
             </div>
           </div>
         </main>

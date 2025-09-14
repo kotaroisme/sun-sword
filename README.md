@@ -15,11 +15,6 @@ gem 'sun-sword'
 
 And then execute:
 ```bash
-    $ rails new kotaro_minami -d=postgresql -T --skip-javascript --skip-asset-pipeline
-    $ bundle install
-    $ rails generate rider_kick:init
-    $ rails generate rider_kick:clean_arch --setup
-    $ rails db:drop db:create db:migrate db:seed
     $ rails generate sun_sword:frontend
     $ rubocop -a
 ```
@@ -27,15 +22,8 @@ And then execute:
 ```bash
 Description:
      Clean Architecture CRUD generator
-     rails new kotaro_minami -d=postgresql -T --skip-javascript --skip-asset-pipeline
 
 Example:
-    To Generate Init:
-        bin/rails  generate rider_kick:init
-
-    To Generate Pattern:
-        bin/rails  generate rider_kick:clean_arch --setup
-
     To Generate Frontend:
         bin/rails  generate sun_sword:frontend --setup
         
