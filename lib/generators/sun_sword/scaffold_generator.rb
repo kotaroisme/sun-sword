@@ -201,21 +201,25 @@ module SunSword
     end
 
     def create_link_file
-      template 'views/components/menu/link.html.erb.tt', File.join('app/views/components/menu', "_link_to_#{@scope_path}.html.erb")
+      partial_path = File.join('app/views/components/menu', "_link_to_#{@scope_path}.html.erb")
+      template 'views/components/menu/link.html.erb.tt', partial_path unless File.exist?(partial_path)
+
+      sidebar = 'app/views/components/layouts/_sidebar.html.erb'
+      marker  = "                <%# generate_link %>\n"
       link_to = "                <li><%= render 'components/menu/#{"link_to_#{@scope_path}"}' %></li>\n"
-      inject_into_file 'app/views/components/layouts/_sidebar.html.erb', link_to, before: "                <%# generate_link %>\n"
+      inject_into_file(sidebar, link_to, before: marker) unless File.read(sidebar).include?(link_to)
+
       routes_file = 'config/routes.rb'
-      if !namespace_exists? && @route_scope_path.present?
-        scope_code = <<-RUBY
-  namespace :#{@route_scope_path} do
-  end
-        RUBY
-        insert_into_file routes_file, scope_code, after: "Rails.application.routes.draw do\n"
-      end
       if @route_scope_path.present?
-        inject_into_file routes_file, "    resources :#{@scope_path}\n", after: "namespace :#{@route_scope_path} do\n"
+        unless namespace_exists?
+          scope_code = "  namespace :#{@route_scope_path} do\n  end\n"
+          insert_into_file routes_file, scope_code, after: "Rails.application.routes.draw do\n" unless File.read(routes_file).include?(scope_code)
+        end
+        resource_line = "    resources :#{@scope_path}\n"
+        inject_into_file routes_file, resource_line, after: "namespace :#{@route_scope_path} do\n" unless File.read(routes_file).include?(resource_line)
       else
-        inject_into_file routes_file, "  resources :#{@scope_path}\n", after: "Rails.application.routes.draw do\n"
+        resource_line = "  resources :#{@scope_path}\n"
+        inject_into_file routes_file, resource_line, after: "Rails.application.routes.draw do\n" unless File.read(routes_file).include?(resource_line)
       end
     end
 
@@ -225,15 +229,29 @@ module SunSword
     end
 
     def strong_params
-      results = ''
-      @controllers.form_fields.each do |field|
-        if field.type.to_s.eql?('files')
-          results << "{ #{field.name}: [] }, "
+      # pakai controllers.form_fields kalau ada, kalau tidak jatuh ke kolom model (contract_fields)
+      raw_fields = @controllers&.form_fields || contract_fields
+
+      # normalisasi jadi pasangan [name, type]
+      pairs = raw_fields.map do |f|
+        if f.respond_to?(:name)
+          [f.name.to_s, f.type.to_s]
         else
-          results << ":#{field.name}, "
+          column_type = @model_class.columns_hash[f.to_s]&.type.to_s
+          [f.to_s, column_type.presence || 'string']
         end
       end
-      results[0..-2]
+
+      permitted = pairs.map do |name, type|
+        case type
+        when 'files' then "{ #{name}: [] }"  # multiple
+        when 'json', 'jsonb', 'hash' then "{ #{name}: {} }"
+        when 'array' then "{ #{name}: [] }"
+        else ":#{name}"
+        end
+      end
+
+      permitted.join(', ')
     end
   end
 end
