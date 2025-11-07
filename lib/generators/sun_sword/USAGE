@@ -1,10 +1,31 @@
 Description:
-     Clean Architecture CRUD generator
+     Clean Architecture CRUD generator with Engine support
      rails new jendral_jack -d=postgresql -T --skip-javascript
 
 Example:
+    # Init configuration
     bin/rails generate sun_sword:init
+    
+    # Frontend setup (main app)
     bin/rails generate sun_sword:frontend --setup
-    bin/rails generate sun_sword:scaffold contacts<check in db/structure>
+    
+    # Frontend setup (specific engine)
+    bin/rails generate sun_sword:frontend --setup --engine=admin
+    
+    # Scaffold (main app)
+    bin/rails generate sun_sword:scaffold contacts
+    bin/rails generate sun_sword:scaffold products scope:dashboard
+    
+    # Scaffold (specific engine)
+    bin/rails generate sun_sword:scaffold users --engine=admin
+    
+    # Scaffold (engine with structure from another engine)
+    bin/rails generate sun_sword:scaffold products --engine=api --engine_structure=core
 
+Available Options:
+    --engine=ENGINE_NAME          # Generate files to specific engine
+    --engine_structure=ENGINE     # Load structure file from specific engine
+    
+Note: Structure files must be in db/structures/[name]_structure.yaml
+      For engines: [engine_path]/db/structures/[name]_structure.yaml
 

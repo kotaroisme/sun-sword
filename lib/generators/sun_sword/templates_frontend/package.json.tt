@@ -1,5 +1,5 @@
 {
-  "name": "sun_sword",
+  "name": "<%= app_name %>",
   "private": "true",
   "type": "module",
   "author": "kotarominami <kotaroisme@gmail.com>",
@@ -11,3 +11,4 @@
     "preview": "bun run vite preview"
   }
 }
+

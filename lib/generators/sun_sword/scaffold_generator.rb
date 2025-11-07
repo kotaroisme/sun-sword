@@ -12,6 +12,19 @@ module SunSword
     argument :arg_structure, type: :string, default: '', banner: ''
     argument :arg_scope, type: :hash, default: '', banner: 'scope:dashboard'
 
+    class_option :engine, type: :string, default: nil, desc: 'Specify target engine name (e.g., admin, api)'
+    class_option :engine_structure, type: :string, default: nil, desc: 'Specify engine where structure file is located'
+
+    def validate_engine
+      return unless options[:engine]
+
+      unless engine_exists?
+        raise Thor::Error, "Engine '#{options[:engine]}' not found. Available engines: #{available_engines.join(', ')}"
+      end
+
+      say "Generating scaffold for engine: #{options[:engine]}", :cyan
+    end
+
     def running
       setup_variables
       create_root_folder
@@ -23,7 +36,7 @@ module SunSword
     private
 
     def setup_variables
-      config     = YAML.load_file("db/structures/#{arg_structure}_structure.yaml")
+      config     = YAML.load_file(structure_file_path)
       @structure = Hashie::Mash.new(config)
 
       # Mengambil detail konfigurasi
@@ -180,24 +193,24 @@ module SunSword
     end
 
     def create_root_folder
-      empty_directory File.join('app/views', @route_scope_path.to_s, @scope_path.to_s)
+      empty_directory File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s)
     end
 
     def create_controller_file
-      template 'controllers/controller.rb.tt', File.join('app/controllers', @route_scope_path.to_s, "#{@scope_path}_controller.rb")
+      template 'controllers/controller.rb.tt', File.join(path_app, 'controllers', @route_scope_path.to_s, "#{@scope_path}_controller.rb")
     end
 
     def create_view_file
       @form_fields_html = generate_form_fields_html
-      template 'views/_form.html.erb.tt', File.join('app/views', @route_scope_path.to_s, @scope_path.to_s, '_form.html.erb')
-      template 'views/edit.html.erb.tt', File.join('app/views', @route_scope_path.to_s, @scope_path.to_s, 'edit.html.erb')
-      template 'views/index.html.erb.tt', File.join('app/views', @route_scope_path.to_s, @scope_path.to_s, 'index.html.erb')
-      template 'views/new.html.erb.tt', File.join('app/views', @route_scope_path.to_s, @scope_path.to_s, 'new.html.erb')
-      template 'views/show.html.erb.tt', File.join('app/views', @route_scope_path.to_s, @scope_path.to_s, 'show.html.erb')
+      template 'views/_form.html.erb.tt', File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s, '_form.html.erb')
+      template 'views/edit.html.erb.tt', File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s, 'edit.html.erb')
+      template 'views/index.html.erb.tt', File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s, 'index.html.erb')
+      template 'views/new.html.erb.tt', File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s, 'new.html.erb')
+      template 'views/show.html.erb.tt', File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s, 'show.html.erb')
     end
 
     def namespace_exists?
-      routes_file   = 'config/routes.rb'
+      routes_file   = routes_file_path
       scope_pattern = "namespace :#{@route_scope_path} do\n"
       if File.exist?(routes_file)
         file_content = File.read(routes_file)
@@ -207,16 +220,98 @@ module SunSword
       end
     end
 
+    # Engine support methods
+    def path_app
+      engine_path ? File.join(engine_path, 'app') : 'app'
+    end
+
+    def engine_path
+      return nil unless options[:engine]
+      @engine_path ||= detect_engine_path
+    end
+
+    def detect_engine_path
+      engine_name = options[:engine]
+      possible_paths = [
+        "engines/#{engine_name}",
+        "components/#{engine_name}",
+        "gems/#{engine_name}",
+        engine_name
+      ]
+
+      possible_paths.each do |path|
+        return path if Dir.exist?(path) && File.exist?(File.join(path, "#{engine_name}.gemspec"))
+      end
+
+      nil
+    end
+
+    def engine_exists?
+      !engine_path.nil?
+    end
+
+    def available_engines
+      engines = []
+      ['engines', 'components', 'gems', '.'].each do |dir|
+        next unless Dir.exist?(dir)
+
+        Dir.glob(File.join(dir, '*')).each do |path|
+          next unless Dir.exist?(path)
+
+          engine_name = File.basename(path)
+          gemspec = File.join(path, "#{engine_name}.gemspec")
+          engines << engine_name if File.exist?(gemspec)
+        end
+      end
+      engines.uniq
+    end
+
+    def structure_file_path
+      engine_name = options[:engine_structure] || options[:engine]
+
+      if engine_name
+        structure_engine_path = detect_structure_engine_path(engine_name)
+        if structure_engine_path
+          File.join(structure_engine_path, 'db/structures', "#{arg_structure}_structure.yaml")
+        else
+          raise Thor::Error, "Structure file not found in engine '#{engine_name}'"
+        end
+      else
+        "db/structures/#{arg_structure}_structure.yaml"
+      end
+    end
+
+    def detect_structure_engine_path
+      engine_name = options[:engine_structure] || options[:engine]
+      possible_paths = [
+        "engines/#{engine_name}",
+        "components/#{engine_name}",
+        "gems/#{engine_name}",
+        engine_name
+      ]
+
+      possible_paths.each do |path|
+        structure_dir = File.join(path, 'db/structures')
+        return path if Dir.exist?(structure_dir)
+      end
+
+      nil
+    end
+
+    def routes_file_path
+      engine_path ? File.join(engine_path, 'config/routes.rb') : 'config/routes.rb'
+    end
+
     def create_link_file
-      partial_path = File.join('app/views/components/menu', "_link_to_#{@scope_path}.html.erb")
+      partial_path = File.join(path_app, 'views/components/menu', "_link_to_#{@scope_path}.html.erb")
       template 'views/components/menu/link.html.erb.tt', partial_path unless File.exist?(partial_path)
 
-      sidebar = 'app/views/components/layouts/_sidebar.html.erb'
+      sidebar = File.join(path_app, 'views/components/layouts/_sidebar.html.erb')
       marker  = "                <%# generate_link %>\n"
       link_to = "                <li><%= render 'components/menu/#{"link_to_#{@scope_path}"}' %></li>\n"
-      inject_into_file(sidebar, link_to, before: marker) unless File.read(sidebar).include?(link_to)
+      inject_into_file(sidebar, link_to, before: marker) if File.exist?(sidebar) && !File.read(sidebar).include?(link_to)
 
-      routes_file = 'config/routes.rb'
+      routes_file = routes_file_path
       if @route_scope_path.present?
         unless namespace_exists?
           scope_code = "  namespace :#{@route_scope_path} do\n  end\n"

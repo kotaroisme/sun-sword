@@ -273,4 +273,154 @@ RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
       end
     end
   end
+
+  describe 'engine support' do
+    describe '#engine_path' do
+      it 'returns nil when no engine option is set' do
+        generator = described_class.new(['test'], {})
+        expect(generator.send(:engine_path)).to be_nil
+      end
+
+      it 'returns engine path when engine option is set' do
+        generator = described_class.new(['test'], { engine: 'admin' })
+        allow(generator).to receive(:detect_engine_path).and_return('engines/admin')
+
+        expect(generator.send(:engine_path)).to eq('engines/admin')
+      end
+    end
+
+    describe '#detect_engine_path' do
+      let(:generator) { described_class.new(['test'], { engine: 'admin' }) }
+
+      it 'detects engine in engines/ directory' do
+        allow(Dir).to receive(:exist?).and_call_original
+        allow(Dir).to receive(:exist?).with('engines/admin').and_return(true)
+        allow(File).to receive(:exist?).and_call_original
+        allow(File).to receive(:exist?).with('engines/admin/admin.gemspec').and_return(true)
+
+        expect(generator.send(:detect_engine_path)).to eq('engines/admin')
+      end
+
+      it 'detects engine in components/ directory' do
+        allow(Dir).to receive(:exist?).and_call_original
+        allow(Dir).to receive(:exist?).with('engines/admin').and_return(false)
+        allow(Dir).to receive(:exist?).with('components/admin').and_return(true)
+        allow(File).to receive(:exist?).and_call_original
+        allow(File).to receive(:exist?).with('components/admin/admin.gemspec').and_return(true)
+
+        expect(generator.send(:detect_engine_path)).to eq('components/admin')
+      end
+
+      it 'returns nil when engine not found' do
+        allow(Dir).to receive(:exist?).and_call_original
+        allow(Dir).to receive(:exist?).with(anything).and_return(false)
+
+        expect(generator.send(:detect_engine_path)).to be_nil
+      end
+    end
+
+    describe '#path_app' do
+      it 'returns "app" when no engine is set' do
+        generator = described_class.new(['test'], {})
+        expect(generator.send(:path_app)).to eq('app')
+      end
+
+      it 'returns engine app path when engine is set' do
+        generator = described_class.new(['test'], { engine: 'admin' })
+        allow(generator).to receive(:engine_path).and_return('engines/admin')
+
+        expect(generator.send(:path_app)).to eq('engines/admin/app')
+      end
+    end
+
+    describe '#structure_file_path' do
+      it 'returns default path when no engine options' do
+        generator = described_class.new(['test'], {})
+        generator.instance_variable_set(:@arg_structure, 'user')
+
+        expect(generator.send(:structure_file_path)).to eq('db/structures/user_structure.yaml')
+      end
+
+      it 'returns engine path when engine_structure option is set' do
+        generator = described_class.new(['test'], { engine_structure: 'core' })
+        generator.instance_variable_set(:@arg_structure, 'user')
+
+        allow(generator).to receive(:detect_structure_engine_path).and_return('engines/core')
+
+        expect(generator.send(:structure_file_path)).to eq('engines/core/db/structures/user_structure.yaml')
+      end
+
+      it 'uses engine option as fallback for structure path' do
+        generator = described_class.new(['test'], { engine: 'admin' })
+        generator.instance_variable_set(:@arg_structure, 'user')
+
+        allow(generator).to receive(:detect_structure_engine_path).and_return('engines/admin')
+
+        expect(generator.send(:structure_file_path)).to eq('engines/admin/db/structures/user_structure.yaml')
+      end
+
+      it 'raises error when structure engine not found' do
+        generator = described_class.new(['test'], { engine_structure: 'nonexistent' })
+        generator.instance_variable_set(:@arg_structure, 'user')
+
+        allow(generator).to receive(:detect_structure_engine_path).and_return(nil)
+
+        expect { generator.send(:structure_file_path) }.to raise_error(Thor::Error, /Structure file not found/)
+      end
+    end
+
+    describe '#routes_file_path' do
+      it 'returns default path when no engine' do
+        generator = described_class.new(['test'], {})
+        expect(generator.send(:routes_file_path)).to eq('config/routes.rb')
+      end
+
+      it 'returns engine routes path when engine is set' do
+        generator = described_class.new(['test'], { engine: 'admin' })
+        allow(generator).to receive(:engine_path).and_return('engines/admin')
+
+        expect(generator.send(:routes_file_path)).to eq('engines/admin/config/routes.rb')
+      end
+    end
+
+    describe '#validate_engine' do
+      it 'does nothing when no engine option is set' do
+        generator = described_class.new(['test'], {})
+        expect { generator.validate_engine }.not_to raise_error
+      end
+
+      it 'raises error when engine does not exist' do
+        generator = described_class.new(['test'], { engine: 'nonexistent' })
+        allow(generator).to receive(:engine_exists?).and_return(false)
+        allow(generator).to receive(:available_engines).and_return(['admin', 'api'])
+
+        expect { generator.validate_engine }.to raise_error(Thor::Error, /Engine 'nonexistent' not found/)
+      end
+
+      it 'succeeds when engine exists' do
+        generator = described_class.new(['test'], { engine: 'admin' })
+        allow(generator).to receive(:engine_exists?).and_return(true)
+
+        expect { generator.validate_engine }.not_to raise_error
+      end
+    end
+
+    describe '#detect_structure_engine_path' do
+      let(:generator) { described_class.new(['test'], { engine_structure: 'core' }) }
+
+      it 'detects structure directory in engine' do
+        allow(Dir).to receive(:exist?).and_call_original
+        allow(Dir).to receive(:exist?).with('engines/core/db/structures').and_return(true)
+
+        expect(generator.send(:detect_structure_engine_path)).to eq('engines/core')
+      end
+
+      it 'returns nil when structure directory not found' do
+        allow(Dir).to receive(:exist?).and_call_original
+        allow(Dir).to receive(:exist?).with(anything).and_return(false)
+
+        expect(generator.send(:detect_structure_engine_path)).to be_nil
+      end
+    end
+  end
 end

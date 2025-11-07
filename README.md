@@ -47,17 +47,41 @@ And then execute:
 The generator will automatically install frontend dependencies using Bun.
 ---
 ## Usage
-```bash
-Description:
-     Clean Architecture CRUD generator
 
-Example:
-    To Generate Frontend:
-        bin/rails  generate sun_sword:init
-        bin/rails  generate sun_sword:frontend --setup
-        
-    To Generate scaffold:
-        bin/rails  generate sun_sword:scaffold Models::Contact actor:user
+### Basic Usage
+```bash
+# Init configuration
+bin/rails generate sun_sword:init
+
+# Setup frontend (main app)
+bin/rails generate sun_sword:frontend --setup
+
+# Generate scaffold (main app)
+bin/rails generate sun_sword:scaffold user
+bin/rails generate sun_sword:scaffold product scope:dashboard
+```
+
+### Engine Support (NEW! 🎉)
+
+Sun-sword now supports generating to specific Rails engines!
+
+```bash
+# Setup frontend for specific engine
+bin/rails generate sun_sword:frontend --setup --engine=admin
+
+# Generate scaffold to specific engine
+bin/rails generate sun_sword:scaffold user --engine=admin
+
+# Generate to one engine, use structure from another
+bin/rails generate sun_sword:scaffold product --engine=api --engine_structure=core
+```
+
+**Supported engine locations:**
+- `engines/[name]/`
+- `components/[name]/`
+- `gems/[name]/`
+
+See [ENGINE_SUPPORT.md](ENGINE_SUPPORT.md) for detailed documentation.
 ```
 ---
 ## Generated structure
