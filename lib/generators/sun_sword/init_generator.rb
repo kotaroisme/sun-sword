@@ -1,3 +1,5 @@
+require 'rails/generators'
+
 module SunSword
   class InitGenerator < Rails::Generators::Base
     source_root File.expand_path('templates_init', __dir__)

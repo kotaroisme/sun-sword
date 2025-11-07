@@ -3,5 +3,11 @@
   "private": "true",
   "type": "module",
   "author": "kotarominami <kotaroisme@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "packageManager": "bun@1.0.0",
+  "scripts": {
+    "dev": "bun run vite dev",
+    "build": "bun run vite build",
+    "preview": "bun run vite preview"
+  }
 }

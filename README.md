@@ -8,14 +8,27 @@ Clean Architecture, as described in [Robert Martin's seminal book](https://www.a
 ## ✨ Features
 
 - **One-shot frontend setup**  
-  Installs and wires **Vite**, **Tailwind v4**, **Turbo**, **Stimulus**, HMR, and sensible defaults.
+  Installs and wires **Vite**, **Tailwind v4**, **Turbo**, **Stimulus**, HMR, and sensible defaults using **Bun**.
 - **Scaffolded views & components**  
   Opinionated but flexible ERB views, partials, and Stimulus controllers.
 - **Clean integration with Rails 8 + Vite Ruby**  
   Ships `vite.config.ts`, `config/vite.json`, `Procfile.dev`, `bin/watch`, and entrypoints.
+- **Fast package management with Bun**  
+  All frontend dependencies (Vite, Tailwind, Turbo, Stimulus) are installed via Bun for maximum speed.
 
 ---
 ## Installation
+
+### Prerequisites
+
+Make sure you have **Bun** installed on your system:
+
+```bash
+# Install Bun (if not already installed)
+curl -fsSL https://bun.sh/install | bash
+```
+
+### Add to Gemfile
 
 Add this line to your application's Gemfile:
 
@@ -24,12 +37,14 @@ gem 'rider-kick'
 gem 'sun-sword'
 ```
 
-
 And then execute:
 ```bash
-    $ rails generate sun_sword:frontend
+    $ bundle install
+    $ rails generate sun_sword:frontend --setup
     $ rubocop -A
 ```
+
+The generator will automatically install frontend dependencies using Bun.
 ---
 ## Usage
 ```bash

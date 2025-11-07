@@ -1,6 +1,6 @@
 Description:
      Clean Architecture CRUD generator
-     rails new jendral_jack -d=postgresql -T --skip-javascript --skip-asset-pipeline
+     rails new jendral_jack -d=postgresql -T --skip-javascript
 
 Example:
     bin/rails generate sun_sword:init

@@ -43,14 +43,15 @@ Gem::Specification.new do |spec|
   # ==== Runtime dependencies (minimal & aman) ====
   # railties/activesupport untuk integrasi generator + railtie,
   # thor untuk template generator (opsi/behavior).
-  spec.add_dependency "activesupport", ">= 7.1", "< 8.1"
-  spec.add_dependency "railties",      ">= 7.1", "< 8.1"
-  spec.add_dependency "thor",          ">= 1.2", "< 2.0"
+  spec.add_dependency "activesupport", ">= 7.0", "< 9.0"
+  spec.add_dependency "hashie", ">= 5.0", "< 6.0"
+  spec.add_dependency "thor", ">= 1.2", "< 2.0"
 
   # ==== Dev dependencies (untuk repo) ====
   spec.add_development_dependency "appraisal", "~> 2.5"   # uji matrix Rails 7.1/7.2/8.0
-  spec.add_development_dependency "bundler",   "~> 2.4"
-  spec.add_development_dependency "rake",      "~> 13.0"
-  spec.add_development_dependency "rspec",     "~> 3.12"
-  spec.add_development_dependency "rubocop",   "~>1.65"  # atau standardrb sesuai preferensi
+  spec.add_development_dependency "bundler",   ">= 2.4", "< 3.0"
+  spec.add_development_dependency "generator_spec", ">= 0.9", "< 1.0"
+  spec.add_development_dependency "rake",      ">= 13.0", "< 14.0"
+  spec.add_development_dependency "rspec",     ">= 3.12", "< 4.0"
+  spec.add_development_dependency "rubocop",   ">= 1.63", "< 2.0"
 end

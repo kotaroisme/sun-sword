@@ -1,3 +1,10 @@
+require 'rails/generators'
+require 'active_support/inflector'
+require 'active_support/core_ext/object/blank'
+require 'active_support/core_ext/enumerable'
+require 'hashie'
+require 'yaml'
+
 module SunSword
   class ScaffoldGenerator < Rails::Generators::Base
     source_root File.expand_path('templates_scaffold', __dir__)

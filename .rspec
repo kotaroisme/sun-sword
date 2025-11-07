@@ -1,3 +1,6 @@
---format documentation
 --color
---require spec_helper
+--format documentation
+--default_path .
+--pattern '{app,lib}/**/*_spec.rb'
+--exclude-pattern '{lib}/**/templates*/**/*_spec.rb'
+--require ./spec/spec_helper
