@@ -29,6 +29,7 @@ module SunSword
       setup_variables
       create_root_folder
       create_controller_file
+      create_spec_files
       create_view_file
       create_link_file
     end
@@ -46,6 +47,7 @@ module SunSword
 
       @actor                = @structure.actor
       @resource_owner_id    = @structure.resource_owner_id
+      @resource_owner       = @structure.resource_owner
       @uploaders            = @structure.uploaders || []
       @search_able          = @structure.search_able || []
       @services             = @structure.domains || {}
@@ -198,6 +200,14 @@ module SunSword
 
     def create_controller_file
       template 'controllers/controller.rb.tt', File.join(path_app, 'controllers', @route_scope_path.to_s, "#{@scope_path}_controller.rb")
+    end
+
+    def create_spec_files
+      # Controller spec - sejajar dengan controller
+      controller_path = File.join(path_app, 'controllers', @route_scope_path.to_s)
+      template 'controllers/controller_spec.rb.tt', File.join(controller_path, "#{@scope_path}_controller_spec.rb")
+
+      say 'Controller spec created successfully!', :green
     end
 
     def create_view_file

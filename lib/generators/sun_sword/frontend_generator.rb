@@ -28,7 +28,7 @@ module SunSword
     def setup
       copy_assets_from_template
 
-      add_vite_to_gemfile
+      add_to_gemfile
       install_vite
       configure_vite
 
@@ -56,19 +56,18 @@ module SunSword
       say "File '#{path_app}/assets' has been copied from template.", :green
     end
 
-    def add_vite_to_gemfile
+    def add_to_gemfile
       gem_dependencies = <<~RUBY
         # --- SunSword Package frontend
-        gem "turbo-rails"
-        gem "stimulus-rails"
-        gem "vite_rails"
-
         group :development do
           gem "listen"
         end
+        group :test do
+          gem "rails-controller-testing"
+        end
       RUBY
       append_to_file('Gemfile', gem_dependencies)
-      say 'Vite Rails gem added and bundle installed', :green
+      say 'Rails gem added and bundle installed', :green
     end
 
     def install_vite
@@ -117,7 +116,7 @@ module SunSword
       template 'controllers/application_controller.rb.tt', File.join(path_app, 'controllers/application_controller.rb')
       site_route = <<-RUBY
 
-  default_url_options :host => "ENV['BASE_URL']"
+  default_url_options :host => "\#{ENV['BASE_URL']}"
   root "site#stimulus"
   get "site/jadi_a"
   get "site/jadi_b"

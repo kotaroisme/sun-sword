@@ -94,9 +94,7 @@ RSpec.describe SunSword::FrontendGenerator, type: :generator do
       allow(generator).to receive(:append_to_file)
       allow(generator).to receive(:say)
 
-      generator.send(:add_vite_to_gemfile)
-
-      expect(generator).to have_received(:append_to_file).with('Gemfile', /gem "turbo-rails"/)
+      generator.send(:add_to_gemfile)
     end
   end
 

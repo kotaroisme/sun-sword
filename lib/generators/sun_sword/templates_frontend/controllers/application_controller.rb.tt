@@ -8,8 +8,8 @@ class ApplicationController < ActionController::Base
   # Adjust the value of <resource_owner_id> in db/structures/<resource>_structure.yaml
   # Ignore this comment if you haven't generated the structure yet
 
-  #def <resource_owner_id>
-  #   current_auth.<resource_owner_id>
+  #def <%=@resource_owner_id %>
+  #   current_auth.<%=@resource_owner_id %>
   #end
 
   def build_form_errors(params, model, errors)

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require 'ostruct'
 require 'generators/sun_sword/scaffold_generator'
 
 RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
@@ -420,6 +421,185 @@ RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
         allow(Dir).to receive(:exist?).with(anything).and_return(false)
 
         expect(generator.send(:detect_structure_engine_path)).to be_nil
+      end
+    end
+  end
+
+  describe 'spec file generation' do
+    let(:test_model_class) do
+      Class.new do
+        def self.name
+          'TestModel'
+        end
+
+        def self.columns
+          [
+            OpenStruct.new(name: 'id', type: :integer),
+            OpenStruct.new(name: 'name', type: :string),
+            OpenStruct.new(name: 'email', type: :string)
+          ]
+        end
+
+        def self.create!(attrs)
+          new
+        end
+
+        def self.new
+          Object.new
+        end
+      end
+    end
+
+    let(:generator) do
+      described_class.new(['test'], {}).tap do |g|
+        g.destination_root = destination_root
+      end
+    end
+
+    before do
+      mkdir_p(destination_root)
+      mkdir_p(File.join(destination_root, 'db', 'structures'))
+      File.write(File.join(destination_root, 'db', 'structures', structure_file), structure_content)
+
+      # Stub the model class
+      stub_const('TestModel', test_model_class)
+    end
+
+    after do
+      rm_rf(destination_root) if Dir.exist?(destination_root)
+    end
+
+    describe '#create_spec_files' do
+      it 'generates controller spec file in same directory as controller' do
+        Dir.chdir(destination_root) do
+          generator.send(:setup_variables)
+          generator.send(:create_spec_files)
+
+          controller_spec_path = File.join(destination_root, 'app', 'controllers', '', 'test_models_controller_spec.rb')
+          expect(File.exist?(controller_spec_path)).to be true
+        end
+      end
+
+      it 'controller spec contains correct class name' do
+        Dir.chdir(destination_root) do
+          generator.send(:setup_variables)
+          generator.send(:create_spec_files)
+
+          controller_spec_path = File.join(destination_root, 'app', 'controllers', '', 'test_models_controller_spec.rb')
+          content = File.read(controller_spec_path)
+          expect(content).to include('RSpec.describe TestModelsController')
+        end
+      end
+
+      it 'controller spec contains CRUD action tests with use case mocking' do
+        Dir.chdir(destination_root) do
+          generator.send(:setup_variables)
+          generator.send(:create_spec_files)
+
+          controller_spec_path = File.join(destination_root, 'app', 'controllers', '', 'test_models_controller_spec.rb')
+          content = File.read(controller_spec_path)
+
+          expect(content).to include('GET #index')
+          expect(content).to include('GET #show')
+          expect(content).to include('GET #new')
+          expect(content).to include('GET #edit')
+          expect(content).to include('POST #create')
+          expect(content).to include('PATCH #update')
+          expect(content).to include('DELETE #destroy')
+          expect(content).to include('instance_double')
+          expect(content).to include('Dry::Monads::Success')
+          expect(content).to include('Dry::Monads::Failure')
+        end
+      end
+
+      it 'controller spec includes private methods tests' do
+        Dir.chdir(destination_root) do
+          generator.send(:setup_variables)
+          generator.send(:create_spec_files)
+
+          controller_spec_path = File.join(destination_root, 'app', 'controllers', '', 'test_models_controller_spec.rb')
+          content = File.read(controller_spec_path)
+
+          expect(content).to include('private methods')
+          expect(content).to include('#build_contract')
+          expect(content).to include('#set_test_model')
+          expect(content).to include('#test_model_params')
+        end
+      end
+    end
+
+    describe 'spec file generation with scope' do
+      let(:generator_with_scope) do
+        described_class.new(['test', 'scope:admin'], {}).tap do |g|
+          g.destination_root = destination_root
+        end
+      end
+
+      it 'generates controller spec in correct scope directory' do
+        Dir.chdir(destination_root) do
+          generator_with_scope.send(:setup_variables)
+          generator_with_scope.send(:create_spec_files)
+
+          controller_spec_path = File.join(destination_root, 'app', 'controllers', 'admin', 'test_models_controller_spec.rb')
+          expect(File.exist?(controller_spec_path)).to be true
+        end
+      end
+
+      it 'controller spec includes scoped class name and use case paths' do
+        Dir.chdir(destination_root) do
+          generator_with_scope.send(:setup_variables)
+          generator_with_scope.send(:create_spec_files)
+
+          controller_spec_path = File.join(destination_root, 'app', 'controllers', 'admin', 'test_models_controller_spec.rb')
+          content = File.read(controller_spec_path)
+          expect(content).to include('RSpec.describe Admin::TestModelsController')
+          expect(content).to include('Core::UseCases::Admin')
+        end
+      end
+    end
+
+    describe 'spec file generation for engine' do
+      let(:generator_with_engine) do
+        described_class.new(['test'], { engine: 'admin' }).tap do |g|
+          g.destination_root = destination_root
+        end
+      end
+
+      before do
+        mkdir_p(File.join(destination_root, 'engines', 'admin'))
+        mkdir_p(File.join(destination_root, 'engines', 'admin', 'db', 'structures'))
+        File.write(File.join(destination_root, 'engines', 'admin', 'db', 'structures', structure_file), structure_content)
+        mkdir_p(File.join(destination_root, 'db', 'structures'))
+        File.write(File.join(destination_root, 'db', 'structures', structure_file), structure_content)
+
+        stub_const('TestModel', test_model_class)
+        allow(generator_with_engine).to receive(:engine_path).and_return('engines/admin')
+        allow(generator_with_engine).to receive(:engine_exists?).and_return(true)
+        allow(generator_with_engine).to receive(:detect_structure_engine_path).and_return(nil)
+        allow(generator_with_engine).to receive(:structure_file_path).and_return(File.join('db', 'structures', structure_file))
+      end
+
+      it 'generates controller spec in engine directory' do
+        Dir.chdir(destination_root) do
+          generator_with_engine.send(:setup_variables)
+          generator_with_engine.send(:create_spec_files)
+
+          controller_spec_path = File.join(destination_root, 'engines', 'admin', 'app', 'controllers', '', 'test_models_controller_spec.rb')
+          expect(File.exist?(controller_spec_path)).to be true
+        end
+      end
+
+      it 'controller spec contains use case mocking and factory bot' do
+        Dir.chdir(destination_root) do
+          generator_with_engine.send(:setup_variables)
+          generator_with_engine.send(:create_spec_files)
+
+          controller_spec_path = File.join(destination_root, 'engines', 'admin', 'app', 'controllers', '', 'test_models_controller_spec.rb')
+          content = File.read(controller_spec_path)
+          expect(content).to include('instance_double')
+          expect(content).to include('create(:')
+          expect(content).to include('build(:')
+        end
       end
     end
   end
