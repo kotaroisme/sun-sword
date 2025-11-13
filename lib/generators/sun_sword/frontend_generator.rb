@@ -5,7 +5,7 @@ module SunSword
     source_root File.expand_path('templates_frontend', __dir__)
 
     class_option :setup, type: :boolean, default: false, desc: 'Setup domain structure'
-    class_option :engine, type: :string, default: nil, desc: 'Specify engine name (e.g., admin, api)'
+    class_option :engine, type: :string, default: nil, desc: 'Engine option is not supported for frontend generator'
 
     def validate_setup_option
       unless options.setup
@@ -13,19 +13,16 @@ module SunSword
       end
     end
 
-    def validate_engine
-      return unless options[:engine]
-
-      unless engine_exists?
-        raise Thor::Error, "Engine '#{options[:engine]}' not found. Available engines: #{available_engines.join(', ')}"
+    def validate_no_engine
+      if options[:engine]
+        raise Thor::Error, 'Frontend generator does not support --engine option. Frontend setup must be done in the main app only. Use "rails generate sun_sword:frontend --setup" without engine option.'
       end
-
-      say "Generating frontend for engine: #{options[:engine]}", :cyan
     end
 
     desc 'This generator installs Vite with Rails 8 configuration'
 
     def setup
+      validate_no_engine
       copy_assets_from_template
 
       add_to_gemfile
@@ -34,7 +31,7 @@ module SunSword
 
       modify_application_js
       generate_default_frontend
-      generate_controllers_site
+      generate_controllers_tests
       generate_components
       modify_layout_for_vite
     end
@@ -65,6 +62,8 @@ module SunSword
         group :test do
           gem "rails-controller-testing"
         end
+        gem 'turbo-rails'
+        gem 'vite_rails'
       RUBY
       append_to_file('Gemfile', gem_dependencies)
       say 'Rails gem added and bundle installed', :green
@@ -110,91 +109,55 @@ module SunSword
       say 'Generate default controller', :green
     end
 
-    def generate_controllers_site
-      run 'rails g controller site stimulus'
-      template 'controllers/site_controller.rb', File.join(path_app, 'controllers/site_controller.rb')
+    def generate_controllers_tests
+      run 'rails g controller tests stimulus turbo_drive turbo_frame frame_content update_content'
+      template 'controllers/tests_controller.rb', File.join(path_app, 'controllers/tests_controller.rb')
+      template 'controllers/tests_controller_spec.rb', File.join(path_app, 'controllers/tests_controller_spec.rb')
       template 'controllers/application_controller.rb.tt', File.join(path_app, 'controllers/application_controller.rb')
-      site_route = <<-RUBY
+      tests_route = <<-RUBY
 
   default_url_options :host => "\#{ENV['BASE_URL']}"
-  root "site#stimulus"
-  get "site/jadi_a"
-  get "site/jadi_b"
+  root "tests#stimulus"
+  # Frontend feature tests
+  get "tests/stimulus"
+  get "tests/turbo_drive"
+  get "tests/turbo_frame"
+  get "tests/frame_content"
+  post "tests/update_content"
 
       RUBY
-      inject_into_file 'config/routes.rb', site_route, after: "Rails.application.routes.draw do\n"
+      inject_into_file 'config/routes.rb', tests_route, after: "Rails.application.routes.draw do\n"
 
-      say 'Generate default controller', :green
+      # Generate views for tests
+      template 'views/tests/stimulus.html.erb.tt', File.join(path_app, 'views/tests/stimulus.html.erb')
+      template 'views/tests/_comment.html.erb.tt', File.join(path_app, 'views/tests/_comment.html.erb')
+      # Copy non-template files from views/tests directory
+      copy_file 'views/tests/turbo_drive.html.erb', File.join(path_app, 'views/tests/turbo_drive.html.erb')
+      copy_file 'views/tests/turbo_frame.html.erb', File.join(path_app, 'views/tests/turbo_frame.html.erb')
+      copy_file 'views/tests/_frame_content.html.erb', File.join(path_app, 'views/tests/_frame_content.html.erb')
+      copy_file 'views/tests/_updated_content.html.erb', File.join(path_app, 'views/tests/_updated_content.html.erb')
+      copy_file 'views/tests/_log_entry.html.erb', File.join(path_app, 'views/tests/_log_entry.html.erb')
+
+      say 'Generate tests controller for frontend feature testing', :green
     end
 
     def path_app
-      engine_path ? File.join(engine_path, 'app') : 'app'
-    end
-
-    def engine_path
-      return nil unless options[:engine]
-      @engine_path ||= detect_engine_path
-    end
-
-    def detect_engine_path
-      engine_name = options[:engine]
-      possible_paths = [
-        "engines/#{engine_name}",
-        "components/#{engine_name}",
-        "gems/#{engine_name}",
-        engine_name
-      ]
-
-      possible_paths.each do |path|
-        return path if Dir.exist?(path) && File.exist?(File.join(path, "#{engine_name}.gemspec"))
-      end
-
-      nil
-    end
-
-    def engine_exists?
-      !engine_path.nil?
-    end
-
-    def available_engines
-      engines = []
-      ['engines', 'components', 'gems', '.'].each do |dir|
-        next unless Dir.exist?(dir)
-
-        Dir.glob(File.join(dir, '*')).each do |path|
-          next unless Dir.exist?(path)
-
-          engine_name = File.basename(path)
-          gemspec = File.join(path, "#{engine_name}.gemspec")
-          engines << engine_name if File.exist?(gemspec)
-        end
-      end
-      engines.uniq
+      'app'
     end
 
     def app_name
-      @app_name ||= if options[:engine]
-        options[:engine].to_s
-      else
-        begin
-          Rails.application.class.module_parent_name.underscore
-        rescue
-          'app'
-        end
+      @app_name ||= begin
+        Rails.application.class.module_parent_name.underscore
+                    rescue
+                      'app'
       end
     end
 
     def source_code_dir
-      @source_code_dir ||= if options[:engine]
-        "#{path_app}/frontend"
-      else
-        'app/frontend'
-      end
+      @source_code_dir ||= 'app/frontend'
     end
 
     def modify_layout_for_vite
-      template 'views/site/stimulus.html.erb.tt', File.join(path_app, 'views/site/stimulus.html.erb')
-      template 'views/site/_comment.html.erb.tt', File.join(path_app, 'views/site/_comment.html.erb')
       template 'views/layouts/application.html.erb.tt', File.join(path_app, 'views/layouts/application.html.erb')
 
       template 'views/layouts/dashboard/application.html.erb.tt', File.join(path_app, 'views/layouts/owner/application.html.erb')

@@ -1,0 +1,42 @@
+---
+model: TestModel
+resource_name: test_models
+actor: admin
+resource_owner_id: user_id
+entity:
+  skipped_fields:
+  - created_at
+  - updated_at
+  custom_fields: []
+domains:
+  action_list:
+    use_case:
+      contract:
+      - name
+      - email
+  action_fetch_by_id:
+    use_case:
+      contract:
+      - id
+      - name
+      - email
+  action_create:
+    use_case:
+      contract:
+      - name
+      - email
+  action_update:
+    use_case:
+      contract:
+      - name
+      - email
+  action_destroy:
+    use_case:
+      contract:
+      - id
+controllers:
+  form_fields:
+  - name: name
+    type: string
+  - name: email
+    type: string

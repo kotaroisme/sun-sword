@@ -1,17 +1,17 @@
 # Template for the controller (controllers/controller.rb.tt)
-class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") %>Controller < ApplicationController
+class <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.join("::") %>Controller < <%= [@engine_scope_class].reject(&:empty?).join("::").sub(/(.+)/, '\1::') %>ApplicationController
   before_action :set_<%= @variable_subject %>, only: %i[edit update]
   layout :set_layouts
 
-  # GET /<%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("/") %>
+  # GET /<engine_mount_path>/<%=[@scope_path].reject { |c| c.empty? }.join("/") %>
   def index
-    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>
+    use_case = <%= [@engine_structure_class].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract({}))
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
         @<%= @variable_subject.pluralize %> = response
-        render '<%= @route_scope_path %>/<%= @scope_path %>/index'
+        render '<%= @engine_scope_path %>/<%= @scope_path %>/index'
       end
       matcher.failure do |errors|
         redirect_to root_path, success: errors
@@ -19,9 +19,9 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
     end
   end
 
-  # GET /<%= [@route_scope_path, @scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
+  # GET /<engine_mount_path>/<%=[@scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
   def show
-    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>
+    use_case = <%= [@engine_structure_class].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract({ id: params[:id] }))
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
@@ -34,58 +34,58 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
     end
   end
 
-  # GET /<%= [@route_scope_path, @scope_path, "new"].reject { |c| c.empty? }.join("/") %>
+  # GET /<engine_mount_path>/<%=[@scope_path, "new"].reject { |c| c.empty? }.join("/") %>
   def new
     @<%= @variable_subject %> = <%= @model_class %>.new
   end
 
-  # GET /<%= [@route_scope_path, @scope_path, ":uuid", "edit"].reject { |c| c.empty? }.join("/") %>
+  # GET /<engine_mount_path>/<%=[@scope_path, ":uuid", "edit"].reject { |c| c.empty? }.join("/") %>
   def edit
   end
 
-  # POST /<%= @route_scope_path %>/<%= @scope_path %>
+  # POST /<%= @engine_scope_path %>/<%= @scope_path %>
   def create
-    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>
+    use_case = <%= [@engine_structure_class].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract(<%= @variable_subject %>_params))
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
-        redirect_to <%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully created.'
+        redirect_to <%= [@scope_path.singularize].reject { |c| c.empty? }.join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully created.'
       end
       matcher.failure do |errors|
         @<%= @variable_subject %> = build_form_errors(<%= @variable_subject %>_params, <%= @model_class %>.new, errors)
-        render '<%= [@route_scope_path, @scope_path, "new"].reject { |c| c.empty? }.join("/") %>', status: :unprocessable_entity
+        render '<%= [@scope_path, "new"].reject { |c| c.empty? }.join("/") %>', status: :unprocessable_entity
       end
     end
   end
 
-  # PATCH/PUT /<%= [@route_scope_path, @scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
+  # PATCH/PUT /<engine_mount_path>/<%=[@scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
   def update
-    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>
+    use_case = <%= [@engine_structure_class].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract(<%= @variable_subject %>_params).merge({ id: params[:id] }))
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
-        redirect_to <%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully updated.'
+        redirect_to <%= [@scope_path.singularize].reject { |c| c.empty? }.join("_") %>_url(id: response.id), success: '<%= @subject_class %> was successfully updated.'
       end
       matcher.failure do |errors|
         @<%= @variable_subject %> = build_form_errors(<%= @variable_subject %>_params, <%= @model_class %>.find(params[:id]), errors)
-        render '<%= [@route_scope_path, @scope_path, "edit"].reject { |c| c.empty? }.join("/") %>', status: :unprocessable_entity
+        render '<%= [@scope_path, "edit"].reject { |c| c.empty? }.join("/") %>', status: :unprocessable_entity
       end
     end
   end
 
-  # DELETE /<%= [@route_scope_path, @scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
+  # DELETE /<engine_mount_path>/<%=[@scope_path, ":uuid"].reject { |c| c.empty? }.join("/") %>
   def destroy
-    use_case = Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>
+    use_case = <%= [@engine_structure_class].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>
     contract = use_case.contract!(build_contract({ id: params[:id] }))
     result   = use_case.new(contract).result
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
-        redirect_to <%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_url, notice: '<%= @subject_class %> was successfully destroyed.'
+        redirect_to <%= [@scope_path].reject { |c| c.empty? }.join("_") %>_url, notice: '<%= @subject_class %> was successfully destroyed.'
       end
       matcher.failure do |errors|
-        redirect_to <%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_url, error: '<%= @subject_class %> could not be destroyed.'
+        redirect_to <%= [@scope_path].reject { |c| c.empty? }.join("_") %>_url, error: '<%= @subject_class %> could not be destroyed.'
       end
     end
   end
@@ -107,7 +107,7 @@ class <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") 
 <%else -%>
     @<%= @variable_subject %> = <%= @model_class %>.find_by(id: params[:id])
 <%end -%>
-    redirect_to <%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_url, error: '<%= @subject_class %> not found.' if @<%= @variable_subject %>.nil?
+    redirect_to <%= [@scope_path].reject { |c| c.empty? }.join("_") %>_url, error: '<%= @subject_class %> not found.' if @<%= @variable_subject %>.nil?
   end
 
   # Only allow a list of trusted parameters through.

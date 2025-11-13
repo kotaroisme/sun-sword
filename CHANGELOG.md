@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- 🔄 Removed engine support from frontend generator only
+- 🔄 Scaffold generator retains full engine support with `--engine` and `--engine_structure` options
+- 📝 Updated documentation to clarify engine support differences
+
 ## [0.0.12] - 2025-11-07
 
 ### Added

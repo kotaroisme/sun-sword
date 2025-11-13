@@ -1,10 +1,9 @@
 # Engine Support - Sun-Sword
 
-Sun-sword sekarang mendukung generate ke specific Rails Engine untuk aplikasi modular.
+Sun-sword mendukung generate scaffold ke specific Rails Engine untuk aplikasi modular. **Frontend generator tidak mendukung engine dan hanya bisa digunakan untuk main app.**
 
 ## Fitur
 
-- ✅ Generate frontend ke engine tertentu
 - ✅ Generate scaffold ke engine tertentu
 - ✅ Ambil structure file dari engine lain
 - ✅ Multiple engine support
@@ -35,25 +34,14 @@ project/
 
 ## Usage
 
-### 1. Frontend Generator dengan Engine
+### 1. Frontend Generator
 
-#### Generate frontend ke main app (default):
+#### Generate frontend ke main app (hanya opsi yang tersedia):
 ```bash
 rails g sun_sword:frontend --setup
 ```
 
-#### Generate frontend ke specific engine:
-```bash
-# Generate ke engine 'admin'
-rails g sun_sword:frontend --setup --engine=admin
-
-# Generate ke engine 'api'
-rails g sun_sword:frontend --setup --engine=api
-```
-
-**Hasil:**
-- File akan digenerate ke `engines/admin/app/` bukan `app/`
-- Views, controllers, helpers ada di dalam engine
+**Catatan:** Frontend generator tidak mendukung engine. Gunakan untuk main app saja.
 
 ---
 
@@ -86,7 +74,8 @@ rails g sun_sword:scaffold product --engine=api --engine_structure=core
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `--setup` | boolean | false | **Required**. Setup frontend structure |
-| `--engine` | string | nil | Target engine name untuk generate |
+
+**Note:** Frontend generator does NOT support `--engine` option. Frontend setup must be done in the main app only.
 
 ### Scaffold Generator
 
@@ -114,11 +103,8 @@ project/
 
 **Setup:**
 ```bash
-# Setup frontend untuk admin
-rails g sun_sword:frontend --setup --engine=admin
-
-# Setup frontend untuk customer
-rails g sun_sword:frontend --setup --engine=customer
+# Setup frontend di main app (hanya sekali, untuk semua engines)
+rails g sun_sword:frontend --setup
 
 # Generate user management di admin
 rails g sun_sword:scaffold user --engine=admin
@@ -126,6 +112,8 @@ rails g sun_sword:scaffold user --engine=admin
 # Generate product di customer
 rails g sun_sword:scaffold product --engine=customer
 ```
+
+**Catatan:** Frontend setup hanya dilakukan sekali di main app. Semua engines akan menggunakan frontend dari main app.
 
 ### Kasus 2: Shared Structure File
 
@@ -180,9 +168,15 @@ rails g sun_sword:scaffold product --engine=shop --engine_structure=shop
 
 ## Error Handling
 
-### Engine tidak ditemukan:
+### Frontend generator dengan engine (tidak didukung):
 ```bash
-rails g sun_sword:frontend --setup --engine=unknown
+rails g sun_sword:frontend --setup --engine=admin
+# Error: Frontend generator does not support --engine option. Frontend setup must be done in the main app only.
+```
+
+### Engine tidak ditemukan (scaffold generator):
+```bash
+rails g sun_sword:scaffold user --engine=unknown
 # Error: Engine 'unknown' not found. Available engines: admin, api, core
 ```
 
@@ -210,18 +204,9 @@ Setiap path akan divalidasi dengan memastikan file `[engine_name].gemspec` ada.
 
 ### Frontend Generator
 
-**Main app** (`--engine` tidak diset):
+**Main app only** (engine tidak didukung):
 ```
 app/
-├── frontend/
-├── controllers/
-├── views/
-└── helpers/
-```
-
-**Dengan engine** (`--engine=admin`):
-```
-engines/admin/app/
 ├── frontend/
 ├── controllers/
 ├── views/
@@ -268,18 +253,20 @@ engines/admin/
 Jika Anda punya existing app tanpa engine:
 
 ```bash
-# 1. Buat folder engines
+# 1. Setup frontend di main app (hanya sekali)
+rails g sun_sword:frontend --setup
+
+# 2. Buat folder engines
 mkdir -p engines/admin
 
-# 2. Buat gemspec untuk engine
+# 3. Buat gemspec untuk engine
 touch engines/admin/admin.gemspec
 
-# 3. Generate struktur baru
-rails g sun_sword:frontend --setup --engine=admin
+# 4. Generate scaffold ke engine
 rails g sun_sword:scaffold user --engine=admin
 
-# 4. Move existing files ke engine (manual)
-# 5. Update references
+# 5. Move existing files ke engine (manual)
+# 6. Update references
 ```
 
 ---
@@ -311,12 +298,11 @@ echo 'Gem::Specification.new { |s| s.name = "admin" }' > engines/admin/admin.gem
 echo 'Gem::Specification.new { |s| s.name = "api" }' > engines/api/api.gemspec
 echo 'Gem::Specification.new { |s| s.name = "blog" }' > engines/blog/blog.gemspec
 
-# Setup frontend untuk admin
-rails g sun_sword:frontend --setup --engine=admin
+# Setup frontend di main app (hanya sekali)
+rails g sun_sword:frontend --setup
 
 # Buat structure file di blog
-mkdir -p engines/blog/db/structures
-cp db/structures/post_structure.yaml engines/blog/db/structures/
+Gundakan gem `rider-kick` untuk generate structure!!
 
 # Generate post scaffold di blog dengan structure dari blog
 rails g sun_sword:scaffold post --engine=blog --engine_structure=blog
@@ -329,12 +315,11 @@ rails g sun_sword:scaffold user --engine=admin
 
 ## Changelog
 
-### v0.0.12
-- ✨ Added engine support for frontend generator
-- ✨ Added engine support for scaffold generator
-- ✨ Added `--engine_structure` option
-- ✨ Auto-detect engine paths
-- 📝 Added ENGINE_SUPPORT.md documentation
+### v0.0.12+
+- ✅ Scaffold generator retains full engine support with `--engine` and `--engine_structure` options
+- ✨ Added `--engine_structure` option for scaffold generator
+- ✨ Auto-detect engine paths for scaffold generator
+- 📝 Updated documentation to clarify engine support differences
 
 ---
 

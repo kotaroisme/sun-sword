@@ -1,0 +1,87 @@
+<div class="mx-auto max-w-3xl px-6 py-10">
+  <h1 class="text-3xl font-semibold text-gray-900">Turbo Frames Test</h1>
+
+  <section class="mt-8 space-y-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+    <div>
+      <h2 class="text-xl font-semibold text-gray-900">1. Lazy Loading Frame</h2>
+      <p class="mt-2 text-sm text-gray-600">This frame loads content automatically when visible.</p>
+    </div>
+
+    <%= turbo_frame_tag "lazy-content",
+                        src: tests_frame_content_path,
+                        loading: :lazy,
+                        class: "block min-h-[120px]" do %>
+      <div class="flex min-h-[120px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6">
+        <p class="text-sm text-gray-600">⏳ Loading frame content...</p>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="mt-6 space-y-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+    <div>
+      <h2 class="text-xl font-semibold text-gray-900">2. Manual Reload Frame</h2>
+      <p class="mt-2 text-sm text-gray-600">Click button to reload only this frame.</p>
+    </div>
+
+    <%= turbo_frame_tag "manual-content" do %>
+      <div class="rounded-lg border border-blue-400 bg-blue-50 p-6">
+        <p class="text-base font-semibold text-blue-700">Original Frame Content</p>
+        <p class="mt-2 text-sm text-blue-900">
+          Server time: <%= Time.current.strftime('%H:%M:%S.%L') %>
+        </p>
+        <div class="mt-4">
+          <%= link_to "🔄 Reload This Frame Only",
+                      tests_frame_content_path,
+                      data: { turbo_frame: "manual-content" },
+                      class: "inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600" %>
+        </div>
+      </div>
+    <% end %>
+  </section>
+
+  <section class="mt-6 space-y-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+    <div>
+      <h2 class="text-xl font-semibold text-gray-900">3. Turbo Streams - Multiple Updates</h2>
+      <p class="mt-2 text-sm text-gray-600">Single request updates multiple parts of the page.</p>
+    </div>
+
+    <%= form_with url: tests_update_content_path,
+                  data: { turbo_frame: "_top" },
+                  html: { class: "mb-4" } do %>
+      <button type="submit"
+              class="rounded-md bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600">
+        ⚡ Trigger Stream Update
+      </button>
+    <% end %>
+
+    <div id="dynamic-content"
+         class="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6">
+      <p class="text-center text-sm text-gray-600">
+        👆 Click button to update this area
+      </p>
+    </div>
+
+    <div class="space-y-2">
+      <h3 class="text-base font-semibold text-gray-900">Update Log:</h3>
+      <div id="log"
+           class="max-h-48 overflow-y-auto rounded-md border border-gray-200 bg-gray-50 p-3">
+        <p class="text-center text-sm text-gray-500">No updates yet</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-8 rounded-xl bg-gray-50 p-6 ring-1 ring-gray-200">
+    <h3 class="text-base font-semibold text-gray-900">✅ Success Indicators:</h3>
+    <ol class="mt-4 list-decimal space-y-2 pl-6 text-sm leading-7 text-gray-700">
+      <li><strong>Lazy frame:</strong> Loads automatically, replaces "Loading..." message</li>
+      <li><strong>Manual frame:</strong> Only that frame updates, rest of page unchanged</li>
+      <li><strong>Turbo Streams:</strong> Single click updates both content box AND log</li>
+      <li><strong>No page scroll</strong> or flash during updates</li>
+    </ol>
+  </section>
+
+  <div class="mt-8 flex flex-wrap gap-3">
+    <%= link_to "← Turbo Drive", tests_turbo_drive_path, class: "inline-flex items-center rounded-md bg-gray-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800" %>
+    <%= link_to "Back to Stimulus →", tests_stimulus_path, class: "inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700" %>
+  </div>
+</div>

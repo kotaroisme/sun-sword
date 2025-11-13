@@ -9,7 +9,7 @@
         <p class="mt-2 text-sm text-gray-700">A list of all the <%= @subject_class %>.</p>
       </div>
       <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-        <%% if Rails.application.routes.url_helpers.respond_to?(:new_<%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_path) %>
+        <%% if respond_to?(:new_<%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_path) %>
           <%%= link_to new_<%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_path do %>
             <button type="button" class="block class-button">Add <%= @subject_class %></button>
           <%% end %>

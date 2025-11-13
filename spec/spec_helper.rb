@@ -2,6 +2,7 @@
 
 require "sun-sword"
 require "generator_spec"
+# Load all support files including helpers and shared examples
 Dir[File.join(__dir__, "support/**/*.rb")].sort.each { |f| require f }
 
 RSpec.configure do |config|

@@ -53,25 +53,13 @@ touch engines/api/config/routes.rb
 
 ## 📦 Generate Frontend
 
-### Main App (Default)
+### Main App Only (Engine Tidak Didukung)
 ```bash
 rails g sun_sword:frontend --setup
 # Files di: app/frontend/, app/controllers/, app/views/
 ```
 
-### Ke Engine Admin
-```bash
-rails g sun_sword:frontend --setup --engine=admin
-# Files di: engines/admin/app/frontend/
-#           engines/admin/app/controllers/
-#           engines/admin/app/views/
-```
-
-### Ke Engine API
-```bash
-rails g sun_sword:frontend --setup --engine=api
-# Files di: engines/api/app/frontend/
-```
+**Catatan:** Frontend generator tidak mendukung engine. Hanya bisa digunakan untuk main app.
 
 ---
 
@@ -167,10 +155,8 @@ project/
 
 **Setup:**
 ```bash
-# 1. Setup frontend untuk setiap engine
-rails g sun_sword:frontend --setup --engine=admin
-rails g sun_sword:frontend --setup --engine=customer
-rails g sun_sword:frontend --setup --engine=vendor
+# 1. Setup frontend di main app (hanya sekali, untuk semua engines)
+rails g sun_sword:frontend --setup
 
 # 2. Buat shared structures di core
 mkdir -p engines/core/db/structures
@@ -196,12 +182,10 @@ project/
 
 **Setup:**
 ```bash
-# Setup API engines
-rails g sun_sword:frontend --setup --engine=api_v1
-rails g sun_sword:frontend --setup --engine=api_v2
-rails g sun_sword:frontend --setup --engine=web
+# Setup frontend di main app (hanya sekali)
+rails g sun_sword:frontend --setup
 
-# Generate resources
+# Generate resources ke berbagai engines
 rails g sun_sword:scaffold user --engine=api_v1
 rails g sun_sword:scaffold user --engine=api_v2  # Different implementation
 rails g sun_sword:scaffold user --engine=web

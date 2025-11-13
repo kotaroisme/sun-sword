@@ -72,6 +72,13 @@ module SunSword
       @route_scope_path = arg_scope['scope'].to_s.downcase rescue ''
       @route_scope_class = @route_scope_path.camelize rescue ''
 
+      # Engine scope support
+      @engine_structure_path = (options[:engine_structure] || options[:engine]).to_s.downcase
+      @engine_structure_class = (options[:engine_structure] || options[:engine]).to_s.camelize
+
+      @engine_scope_path = options[:engine] ? options[:engine].to_s.downcase : @route_scope_path
+      @engine_scope_class = options[:engine] ? options[:engine].to_s.camelize : @route_scope_class
+
       @mapping_fields = {
         string:    :text_field,
         text:      :text_area,
@@ -195,16 +202,16 @@ module SunSword
     end
 
     def create_root_folder
-      empty_directory File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s)
+      empty_directory File.join(path_app, 'views', @engine_scope_path.to_s, @scope_path.to_s)
     end
 
     def create_controller_file
-      template 'controllers/controller.rb.tt', File.join(path_app, 'controllers', @route_scope_path.to_s, "#{@scope_path}_controller.rb")
+      template 'controllers/controller.rb.tt', File.join(path_app, 'controllers', @engine_scope_path.to_s, "#{@scope_path}_controller.rb")
     end
 
     def create_spec_files
       # Controller spec - sejajar dengan controller
-      controller_path = File.join(path_app, 'controllers', @route_scope_path.to_s)
+      controller_path = File.join(path_app, 'controllers', @engine_scope_path.to_s)
       template 'controllers/controller_spec.rb.tt', File.join(controller_path, "#{@scope_path}_controller_spec.rb")
 
       say 'Controller spec created successfully!', :green
@@ -212,16 +219,16 @@ module SunSword
 
     def create_view_file
       @form_fields_html = generate_form_fields_html
-      template 'views/_form.html.erb.tt', File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s, '_form.html.erb')
-      template 'views/edit.html.erb.tt', File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s, 'edit.html.erb')
-      template 'views/index.html.erb.tt', File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s, 'index.html.erb')
-      template 'views/new.html.erb.tt', File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s, 'new.html.erb')
-      template 'views/show.html.erb.tt', File.join(path_app, 'views', @route_scope_path.to_s, @scope_path.to_s, 'show.html.erb')
+      template 'views/_form.html.erb.tt', File.join(path_app, 'views', @engine_scope_path.to_s, @scope_path.to_s, '_form.html.erb')
+      template 'views/edit.html.erb.tt', File.join(path_app, 'views', @engine_scope_path.to_s, @scope_path.to_s, 'edit.html.erb')
+      template 'views/index.html.erb.tt', File.join(path_app, 'views', @engine_scope_path.to_s, @scope_path.to_s, 'index.html.erb')
+      template 'views/new.html.erb.tt', File.join(path_app, 'views', @engine_scope_path.to_s, @scope_path.to_s, 'new.html.erb')
+      template 'views/show.html.erb.tt', File.join(path_app, 'views', @engine_scope_path.to_s, @scope_path.to_s, 'show.html.erb')
     end
 
     def namespace_exists?
       routes_file   = routes_file_path
-      scope_pattern = "namespace :#{@route_scope_path} do\n"
+      scope_pattern = "namespace :#{@engine_scope_path} do\n"
       if File.exist?(routes_file)
         file_content = File.read(routes_file)
         file_content.include?(scope_pattern)
@@ -291,8 +298,7 @@ module SunSword
       end
     end
 
-    def detect_structure_engine_path
-      engine_name = options[:engine_structure] || options[:engine]
+    def detect_structure_engine_path(engine_name)
       possible_paths = [
         "engines/#{engine_name}",
         "components/#{engine_name}",
@@ -322,13 +328,13 @@ module SunSword
       inject_into_file(sidebar, link_to, before: marker) if File.exist?(sidebar) && !File.read(sidebar).include?(link_to)
 
       routes_file = routes_file_path
-      if @route_scope_path.present?
+      if @engine_scope_path.present?
         unless namespace_exists?
-          scope_code = "  namespace :#{@route_scope_path} do\n  end\n"
+          scope_code = "  namespace :#{@engine_scope_path} do\n  end\n"
           insert_into_file routes_file, scope_code, after: "Rails.application.routes.draw do\n" unless File.read(routes_file).include?(scope_code)
         end
         resource_line = "    resources :#{@scope_path}\n"
-        inject_into_file routes_file, resource_line, after: "namespace :#{@route_scope_path} do\n" unless File.read(routes_file).include?(resource_line)
+        inject_into_file routes_file, resource_line, after: "namespace :#{@engine_scope_path} do\n" unless File.read(routes_file).include?(resource_line)
       else
         resource_line = "  resources :#{@scope_path}\n"
         inject_into_file routes_file, resource_line, after: "Rails.application.routes.draw do\n" unless File.read(routes_file).include?(resource_line)

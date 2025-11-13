@@ -8,7 +8,7 @@ export default defineConfig({
     plugins: [
         RubyPlugin(),
         tailwindcss(),
-        FullReload(['config/routes.rb', 'app/views/**/*', 'app/frontend/pages/**/*']),
+        FullReload(['**/routes.rb', '**/views/**/*.html.erb', 'app/frontend/**/*']),
         StimulusHMR()
     ],
     root: './app/frontend',

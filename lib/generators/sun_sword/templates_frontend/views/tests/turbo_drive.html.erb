@@ -1,0 +1,55 @@
+<div class="mx-auto max-w-3xl px-6 py-10">
+  <h1 class="text-3xl font-semibold text-gray-900">Turbo Drive Test</h1>
+
+  <section class="mt-8 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+    <h2 class="text-xl font-semibold text-gray-900">Current Server Timestamp</h2>
+    <p class="mt-4 text-4xl font-bold text-green-600">
+      <%= @timestamp.strftime('%H:%M:%S.%L') %>
+    </p>
+    <p class="mt-4 text-sm text-gray-600">
+      Page loaded at: <span id="client-load-time" class="font-semibold text-gray-900"></span>
+    </p>
+  </section>
+
+  <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+    <%= link_to "↻ Reload (Turbo Drive)",
+                tests_turbo_drive_path,
+                class: "flex-1 rounded-md bg-green-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-green-700" %>
+
+    <a href="<%= tests_turbo_drive_path %>"
+       data-turbo="false"
+       class="flex-1 rounded-md bg-red-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-red-700">
+      ⟳ Full Page Reload
+    </a>
+  </div>
+
+  <section class="mt-8 rounded-xl bg-gray-50 p-6 ring-1 ring-gray-200">
+    <h3 class="text-base font-semibold text-gray-900">✅ Turbo Drive Working If:</h3>
+    <ol class="mt-4 list-decimal space-y-2 pl-6 text-sm leading-7 text-gray-700">
+      <li><strong>Green button:</strong> Server timestamp updates, client time stays same</li>
+      <li><strong>No flash/flicker</strong> during navigation</li>
+      <li><strong>Browser back/forward</strong> works smoothly</li>
+      <li><strong>Red button:</strong> Both timestamps change (full reload)</li>
+    </ol>
+
+    <div class="mt-4 rounded-md border-l-4 border-cyan-600 bg-white p-4 text-sm text-gray-700">
+      <strong>Expected behavior:</strong> Turbo Drive replaces <code>&lt;body&gt;</code> content without full page reload, keeping CSS/JS loaded.
+    </div>
+  </section>
+
+  <div class="mt-8 flex flex-wrap gap-3">
+    <%= link_to "← Stimulus Test", tests_stimulus_path, class: "inline-flex items-center rounded-md bg-gray-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-800" %>
+    <%= link_to "Turbo Frames →", tests_turbo_frame_path, class: "inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700" %>
+  </div>
+</div>
+
+<script>
+    // Record client-side load time
+    document.getElementById('client-load-time').textContent = new Date().toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        fractionalSecondDigits: 3
+    });
+</script>

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe <%= [@route_scope_class, @scope_class].reject { |c| c.empty? }.join("::") %>Controller, type: :controller do
+RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.join("::") %>Controller, type: :controller do
 <% if @resource_owner_id.present? -%>
   let(:owner) { create(:<%= @resource_owner %>) }
   let(:actor) { create(:actor) }
