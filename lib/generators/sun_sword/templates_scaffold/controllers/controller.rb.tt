@@ -11,7 +11,7 @@ class <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.join("::")
     Dry::Matcher::ResultMatcher.call(result) do |matcher|
       matcher.success do |response|
         @<%= @variable_subject.pluralize %> = response
-        render '<%= @engine_scope_path %>/<%= @scope_path %>/index'
+        render '<%= [@engine_mount_path, @scope_path, "index"].reject { |c| c.empty? }.join("/") %>'
       end
       matcher.failure do |errors|
         redirect_to root_path, success: errors
@@ -54,7 +54,7 @@ class <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.join("::")
       end
       matcher.failure do |errors|
         @<%= @variable_subject %> = build_form_errors(<%= @variable_subject %>_params, <%= @model_class %>.new, errors)
-        render '<%= [@scope_path, "new"].reject { |c| c.empty? }.join("/") %>', status: :unprocessable_entity
+        render '<%= [@engine_mount_path, @scope_path, "new"].reject { |c| c.empty? }.join("/") %>', status: :unprocessable_entity
       end
     end
   end
@@ -70,7 +70,7 @@ class <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.join("::")
       end
       matcher.failure do |errors|
         @<%= @variable_subject %> = build_form_errors(<%= @variable_subject %>_params, <%= @model_class %>.find(params[:id]), errors)
-        render '<%= [@scope_path, "edit"].reject { |c| c.empty? }.join("/") %>', status: :unprocessable_entity
+        render '<%= [@engine_mount_path, @scope_path, "edit"].reject { |c| c.empty? }.join("/") %>', status: :unprocessable_entity
       end
     end
   end
@@ -94,9 +94,9 @@ class <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.join("::")
 
   def build_contract(params)
 <%if @resource_owner_id.present? -%>
-    { <%=@resource_owner_id%>: <%=@resource_owner_id%> }.merge(params)
+    { <%=@resource_owner_id%>: <%=@resource_owner_id%> }.merge(params).to_h
 <%else -%>
-    {}.merge(params)
+    {}.merge(params).to_h
 <%end -%>
   end
 

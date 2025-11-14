@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe TestsController, type: :controller do
+  routes { Web::Engine.routes }
   describe '#stimulus' do
     it 'renders the stimulus template' do
       get :stimulus
@@ -42,14 +43,12 @@ RSpec.describe TestsController, type: :controller do
 
   describe '#update_content' do
     it 'sets the timestamp' do
-      post :update_content
-
+      post :update_content, format: :turbo_stream
       expect(assigns(:timestamp)).to be_a(Time)
     end
 
     it 'responds with turbo_stream format' do
-      post :update_content
-
+      post :update_content, format: :turbo_stream
       expect(response).to have_http_status(:success)
       expect(response.content_type).to include('text/vnd.turbo-stream.html')
     end

@@ -1,5 +1,5 @@
 <div>
-  <div>
+  <div class="pt-5">
     <%%= render "components/alert" %>
   </div>
   <div class="flow-root class-card-container">
@@ -22,14 +22,14 @@
           <thead>
           <tr>
             <%% <%= @controllers.list_fields.map { |tc| [tc.titleize.to_s, '']} + [["Action", "text-center"]]%>.each do |title, attr_class| %>
-              <th scope="col" class="class-tr attr-class"><%%= title %></th>
+              <th scope="col" class="class-tr <%%= attr_class %>"><%%= title %></th>
             <%% end %>
             </th>
           </tr>
           </thead>
-          <tbody class="divide-y bg-white">
+          <tbody class="min-w-full divide-y divide-gray-100">
           <%% @<%= @variable_subject.pluralize %>.response.each do |<%= @variable_subject %>| %>
-            <tr>
+            <tr class="even:bg-gray-50">
 <%@controllers.list_fields.each do |field| -%>
               <td class="class-td">
                 <div class="flex items-center">

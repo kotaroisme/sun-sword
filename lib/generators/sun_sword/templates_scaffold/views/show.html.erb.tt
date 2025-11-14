@@ -1,4 +1,7 @@
 <div>
+  <div class="pt-5">
+    <%%= render "components/alert" %>
+  </div>
   <div class="flow-root class-card-container">
     <div class="flex items-center p-2 mb-10">
       <div class="flex-auto">

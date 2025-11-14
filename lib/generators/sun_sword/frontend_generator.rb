@@ -87,7 +87,6 @@ module SunSword
       template 'bin/watch.tt', 'bin/watch'
       run 'chmod +x bin/watch'
       template 'config/vite.json.tt', 'config/vite.json'
-      template 'env.development.tt', '.env.development'
 
       say 'Vite configuration completed', :green
     end
@@ -126,12 +125,14 @@ module SunSword
   post "tests/update_content"
 
       RUBY
-      inject_into_file 'config/routes.rb', tests_route, after: "Rails.application.routes.draw do\n"
-
+      # Check if routes already exist before injecting
+      routes_file = 'config/routes.rb'
+      if File.exist?(routes_file) && !File.read(routes_file).include?('tests/stimulus')
+        inject_into_file routes_file, tests_route, after: "Rails.application.routes.draw do\n"
+      end
       # Generate views for tests
-      template 'views/tests/stimulus.html.erb.tt', File.join(path_app, 'views/tests/stimulus.html.erb')
-      template 'views/tests/_comment.html.erb.tt', File.join(path_app, 'views/tests/_comment.html.erb')
       # Copy non-template files from views/tests directory
+      copy_file 'views/tests/stimulus.html.erb', File.join(path_app, 'views/tests/stimulus.html.erb')
       copy_file 'views/tests/turbo_drive.html.erb', File.join(path_app, 'views/tests/turbo_drive.html.erb')
       copy_file 'views/tests/turbo_frame.html.erb', File.join(path_app, 'views/tests/turbo_frame.html.erb')
       copy_file 'views/tests/_frame_content.html.erb', File.join(path_app, 'views/tests/_frame_content.html.erb')

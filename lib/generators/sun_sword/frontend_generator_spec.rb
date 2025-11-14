@@ -276,7 +276,6 @@ RSpec.describe SunSword::FrontendGenerator, type: :generator do
       expect(generator).to have_received(:template).with('Procfile.dev.tt', 'Procfile.dev')
       expect(generator).to have_received(:template).with('bin/watch.tt', 'bin/watch')
       expect(generator).to have_received(:template).with('config/vite.json.tt', 'config/vite.json')
-      expect(generator).to have_received(:template).with('env.development.tt', '.env.development')
     end
 
     it 'runs chmod command for bin/watch' do
@@ -412,11 +411,10 @@ RSpec.describe SunSword::FrontendGenerator, type: :generator do
       expect(generator).to have_received(:template).with('controllers/tests_controller_spec.rb', File.join('app', 'controllers/tests_controller_spec.rb'))
     end
 
-    it 'calls template for test views' do
+    it 'calls copy_file for test views' do
       generator.send(:generate_controllers_tests)
 
-      expect(generator).to have_received(:template).with('views/tests/stimulus.html.erb.tt', File.join('app', 'views/tests/stimulus.html.erb'))
-      expect(generator).to have_received(:template).with('views/tests/_comment.html.erb.tt', File.join('app', 'views/tests/_comment.html.erb'))
+      expect(generator).to have_received(:copy_file).with('views/tests/stimulus.html.erb', File.join('app', 'views/tests/stimulus.html.erb'))
     end
 
     it 'copies test view files' do

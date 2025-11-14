@@ -97,11 +97,11 @@ RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
       # Mock the model class
       stub_const('TestModel', Class.new)
       allow(TestModel).to receive(:columns).and_return([
-                                                         double(name: 'id'),
-                                                         double(name: 'name'),
-                                                         double(name: 'email'),
-                                                         double(name: 'created_at'),
-                                                         double(name: 'updated_at')
+                                                         double(name: 'id', type: :integer),
+                                                         double(name: 'name', type: :string),
+                                                         double(name: 'email', type: :string),
+                                                         double(name: 'created_at', type: :datetime),
+                                                         double(name: 'updated_at', type: :datetime)
                                                        ])
       allow(TestModel).to receive(:columns_hash).and_return({
         'id'    => double(type: :integer),
@@ -171,17 +171,17 @@ RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
     before do
       stub_const('TestModel', Class.new)
       allow(TestModel).to receive(:columns).and_return([
-                                                         double(name: 'id'),
-                                                         double(name: 'name'),
-                                                         double(name: 'email'),
-                                                         double(name: 'created_at'),
-                                                         double(name: 'updated_at')
+                                                         double(name: 'id', type: :integer),
+                                                         double(name: 'name', type: :string),
+                                                         double(name: 'email', type: :string),
+                                                         double(name: 'created_at', type: :datetime),
+                                                         double(name: 'updated_at', type: :datetime)
                                                        ])
     end
 
-    it 'returns model columns excluding skipped fields' do
+    it 'returns model columns excluding skipped fields as tuples [name, type]' do
       result = generator.send(:contract_fields)
-      expect(result).to contain_exactly('id', 'name', 'email')
+      expect(result).to contain_exactly(['id', 'integer'], ['name', 'string'], ['email', 'string'])
     end
   end
 
@@ -1154,16 +1154,18 @@ RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
       before do
         allow(generator).to receive(:namespace_exists?).and_return(false)
         allow(generator).to receive(:routes_file_path).and_return(File.join(destination_root, 'config', 'routes.rb'))
+        allow(generator).to receive(:options).and_return({})
+        allow(generator).to receive(:engine_path).and_return(nil)
       end
 
-      it 'creates namespace' do
+      it 'injects routes at root level' do
         Dir.chdir(destination_root) do
           generator.send(:create_link_file)
         end
 
-        expect(generator).to have_received(:insert_into_file).with(
-                               anything,
-                               anything,
+        expect(generator).to have_received(:inject_into_file).with(
+                               File.join(destination_root, 'config', 'routes.rb'),
+                               "  resources :test_models\n",
                                after: "Rails.application.routes.draw do\n"
         )
       end
@@ -1184,20 +1186,33 @@ RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
     end
 
     context 'with engine scope' do
+      let(:generator_with_engine) do
+        described_class.new(['test'], { engine: 'admin' }).tap do |g|
+          g.destination_root = destination_root
+          g.instance_variable_set(:@engine_scope_path, 'admin')
+          g.instance_variable_set(:@scope_path, 'test_models')
+        end
+      end
+
       before do
-        allow(generator).to receive(:routes_file_path).and_return(File.join(destination_root, 'config', 'routes.rb'))
-        allow(generator).to receive(:namespace_exists?).and_return(false)
+        FileUtils.mkdir_p(File.join(destination_root, 'config'))
+        File.write(File.join(destination_root, 'config', 'routes.rb'), "Admin::Engine.routes.draw do\nend\n")
+        allow(generator_with_engine).to receive(:template)
+        allow(generator_with_engine).to receive(:inject_into_file)
+        allow(generator_with_engine).to receive(:routes_file_path).and_return(File.join(destination_root, 'config', 'routes.rb'))
+        allow(generator_with_engine).to receive(:engine_path).and_return('engines/admin')
+        allow(generator_with_engine).to receive(:options).and_return({ engine: 'admin' })
       end
 
       it 'injects resource routes' do
         Dir.chdir(destination_root) do
-          generator.send(:create_link_file)
+          generator_with_engine.send(:create_link_file)
         end
 
-        expect(generator).to have_received(:inject_into_file).with(
-                               anything,
-                               anything,
-                               after: "namespace :admin do\n"
+        expect(generator_with_engine).to have_received(:inject_into_file).with(
+                               File.join(destination_root, 'config', 'routes.rb'),
+                               "  resources :test_models\n",
+                               after: "Admin::Engine.routes.draw do\n"
         )
       end
     end

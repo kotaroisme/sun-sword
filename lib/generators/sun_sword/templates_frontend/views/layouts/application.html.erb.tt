@@ -29,12 +29,12 @@
       </div>
     </div>
   </main>
-  <footer class="mt-auto">
-    <div class="mx-auto max-w-7xl overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
+  <footer class="mt-auto mb-10">
+    <div class="mx-auto max-w-7xl overflow-hidden px-6 py-5 lg:px-8">
       <p class="mt-10 text-center text-xs leading-5 text-gray-500">&copy; <%%= Date.today.year %> Kotaroisme. All rights
         reserved.</p>
     </div>
-      <p class="mt-3 text-center text-xs leading-5 text-gray-500">version <%%= <%= Rails.application.class.module_parent_name %>::VERSION %></p>
+      <p class="text-center text-xs leading-5 text-gray-500">version <%%= <%= Rails.application.class.module_parent_name %>::VERSION %></p>
   </footer>
 </div>
 </body>

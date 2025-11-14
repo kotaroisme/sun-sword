@@ -4,6 +4,7 @@ require 'active_support/core_ext/object/blank'
 require 'active_support/core_ext/enumerable'
 require 'hashie'
 require 'yaml'
+require 'fileutils'
 
 module SunSword
   class ScaffoldGenerator < Rails::Generators::Base
@@ -78,6 +79,9 @@ module SunSword
 
       @engine_scope_path = options[:engine] ? options[:engine].to_s.downcase : @route_scope_path
       @engine_scope_class = options[:engine] ? options[:engine].to_s.camelize : @route_scope_class
+
+      # Engine mount path for view rendering
+      @engine_mount_path = options[:engine] ? options[:engine].to_s.downcase : ''
 
       @mapping_fields = {
         string:    :text_field,
@@ -328,22 +332,62 @@ module SunSword
       inject_into_file(sidebar, link_to, before: marker) if File.exist?(sidebar) && !File.read(sidebar).include?(link_to)
 
       routes_file = routes_file_path
-      if @engine_scope_path.present?
-        unless namespace_exists?
-          scope_code = "  namespace :#{@engine_scope_path} do\n  end\n"
-          insert_into_file routes_file, scope_code, after: "Rails.application.routes.draw do\n" unless File.read(routes_file).include?(scope_code)
+
+      # Ensure routes file exists (create if needed for engine)
+      unless File.exist?(routes_file)
+        if engine_path
+          # Create routes file for engine if it doesn't exist
+          FileUtils.mkdir_p(File.dirname(routes_file))
+          # Use engine routes format: Web::Engine.routes.draw do
+          engine_class_name = options[:engine].to_s.camelize
+          engine_routes_header = "#{engine_class_name}::Engine.routes.draw do\n"
+          File.write(routes_file, "#{engine_routes_header}end\n")
+          say "Created routes file at #{routes_file}", :green
+        else
+          return # Skip if routes file doesn't exist in main app
         end
-        resource_line = "    resources :#{@scope_path}\n"
-        inject_into_file routes_file, resource_line, after: "namespace :#{@engine_scope_path} do\n" unless File.read(routes_file).include?(resource_line)
+      end
+
+      routes_content = File.read(routes_file)
+
+      # Determine routes draw pattern based on engine or main app
+      has_engine = options[:engine].present?
+
+      if has_engine
+        engine_class_name = options[:engine].to_s.camelize
+        routes_draw_pattern = "#{engine_class_name}::Engine.routes.draw do\n"
+        routes_draw_pattern_alt = "#{engine_class_name}::Engine.routes.draw do"
       else
-        resource_line = "  resources :#{@scope_path}\n"
-        inject_into_file routes_file, resource_line, after: "Rails.application.routes.draw do\n" unless File.read(routes_file).include?(resource_line)
+        routes_draw_pattern = "Rails.application.routes.draw do\n"
+        routes_draw_pattern_alt = 'Rails.application.routes.draw do'
+      end
+
+      resource_line = "  resources :#{@scope_path}\n"
+
+      # Skip if resource already exists
+      return if routes_content.include?(resource_line)
+
+      begin
+        # Inject at root level (no namespace/scope)
+        if routes_content.include?(routes_draw_pattern)
+          inject_into_file routes_file, resource_line, after: routes_draw_pattern
+          say "Added routes '#{resource_line.strip}' to root level in #{routes_file}", :green
+        elsif routes_content.include?(routes_draw_pattern_alt)
+          inject_into_file routes_file, resource_line, after: routes_draw_pattern_alt
+          say "Added routes '#{resource_line.strip}' to root level in #{routes_file}", :green
+        else
+          say "Warning: Could not find routes draw pattern (#{routes_draw_pattern.strip}) in routes file: #{routes_file}", :yellow
+          say "Routes file content:\n#{routes_content}", :yellow if ENV['DEBUG']
+        end
+      rescue => e
+        say "Error adding routes to #{routes_file}: #{e.message}", :red
+        say e.backtrace.first(3).join("\n"), :red if ENV['DEBUG']
       end
     end
 
     def contract_fields
       skip_contract_fields = @skipped_fields.map(&:strip).uniq
-      @model_class.columns.reject { |column| skip_contract_fields.include?(column.name.to_s) }.map(&:name).map(&:to_s)
+      @model_class.columns.reject { |column| skip_contract_fields.include?(column.name.to_s) }.map { |column| [column.name.to_s, column.type.to_s] }
     end
 
     def strong_params
@@ -352,7 +396,10 @@ module SunSword
 
       # normalisasi jadi pasangan [name, type]
       pairs = raw_fields.map do |f|
-        if f.respond_to?(:name)
+        if f.is_a?(Array) && f.length == 2
+          # Already a tuple [name, type]
+          [f[0].to_s, f[1].to_s]
+        elsif f.respond_to?(:name)
           [f.name.to_s, f.type.to_s]
         else
           column_type = @model_class.columns_hash[f.to_s]&.type.to_s
