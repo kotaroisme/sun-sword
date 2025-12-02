@@ -1210,9 +1210,9 @@ RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
         end
 
         expect(generator_with_engine).to have_received(:inject_into_file).with(
-                               File.join(destination_root, 'config', 'routes.rb'),
-                               "  resources :test_models\n",
-                               after: "Admin::Engine.routes.draw do\n"
+                                           File.join(destination_root, 'config', 'routes.rb'),
+                                           "  resources :test_models\n",
+                                           after: "Admin::Engine.routes.draw do\n"
         )
       end
     end
