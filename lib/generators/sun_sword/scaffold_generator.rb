@@ -15,6 +15,7 @@ module SunSword
 
     class_option :engine, type: :string, default: nil, desc: 'Specify target engine name (e.g., admin, api)'
     class_option :engine_structure, type: :string, default: nil, desc: 'Specify engine where structure file is located'
+    class_option :domain, type: :string, default: nil, desc: 'Specify domain prefix for UseCases (e.g., core)'
 
     def validate_engine
       return unless options[:engine]
@@ -82,6 +83,9 @@ module SunSword
 
       # Engine mount path for view rendering
       @engine_mount_path = options[:engine] ? options[:engine].to_s.downcase : ''
+
+      # UseCase domain prefix
+      @usecase_domain = options[:domain] ? options[:domain].to_s.camelize : @engine_structure_class
 
       @mapping_fields = {
         string:    :text_field,

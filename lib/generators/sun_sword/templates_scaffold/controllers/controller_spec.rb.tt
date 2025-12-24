@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.join("::") %>Controller, type: :controller do
 <% if @resource_owner_id.present? -%>
   let(:owner) { create(:<%= @resource_owner %>) }
-  let(:actor) { create(:actor) }
+  let(:actor) { create(:actor, <%= @resource_owner_id%>: owner.id) }
 <% end -%>
 
   let(:valid_attributes) do
@@ -43,14 +43,10 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
 <% end -%>
   describe 'GET #index' do
     context 'when use case succeeds' do
-      let(:<%= @variable_subject.pluralize %>) { create_list(:<%= @variable_subject %>) }
-      let(:use_case_instance) { instance_double(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>) }
-      let(:success_result) { Dry::Monads::Success(<%= @variable_subject.pluralize %>) }
+      let(:<%= @variable_subject.pluralize %>) { create_list(:<%= @variable_subject %>, 3) }
 
       before do
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!).and_return(true)
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>).to receive(:new).and_return(use_case_instance)
-        allow(use_case_instance).to receive(:result).and_return(success_result)
+        stub_use_case(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>, <%= @variable_subject.pluralize %>, response: :success)
       end
 
       it 'returns success response and assigns @<%= @variable_subject.pluralize %>' do
@@ -62,20 +58,18 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
       end
 
       it 'calls use case with correct contract' do
-        expect(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!)<%= @resource_owner_id.present? ? "\n          .with(hash_including(#{@resource_owner_id}: owner.id))" : '' %>
+        expect(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!)<%= @resource_owner_id.present? ? "\n          .with(hash_including(#{@resource_owner_id}: owner.id))" : '' %>
 
         get :index
       end
     end
 
     context 'when use case fails' do
-      let(:use_case_instance) { instance_double(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>) }
-      let(:failure_result) { Dry::Monads::Failure('Error loading <%= @variable_subject.pluralize %>') }
+      let(:use_case_instance) { instance_double(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>) }
+      let(:failure_result) { 'Error loading <%= @variable_subject.pluralize %>' }
 
       before do
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!).and_return(true)
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>).to receive(:new).and_return(use_case_instance)
-        allow(use_case_instance).to receive(:result).and_return(failure_result)
+        stub_use_case(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('list')].reject { |c| c.empty? }.join("::") %>, failure_result, response: :failure)
       end
 
       it 'redirects to root path with error' do
@@ -91,13 +85,11 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
     let(:<%= @variable_subject %>) { create(:<%= @variable_subject %><%= @resource_owner_id.present? ? ", #{@resource_owner_id}: owner.id" : '' %>) }
 
     context 'when use case succeeds' do
-      let(:use_case_instance) { instance_double(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>) }
-      let(:success_result) { Dry::Monads::Success(<%= @variable_subject %>) }
+      let(:use_case_instance) { instance_double(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>) }
+      let(:success_result) { <%= @variable_subject %> }
 
       before do
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!).and_return(true)
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>).to receive(:new).and_return(use_case_instance)
-        allow(use_case_instance).to receive(:result).and_return(success_result)
+        stub_use_case(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>, success_result, response: :success)
       end
 
       it 'returns success response and assigns @<%= @variable_subject %>' do
@@ -108,7 +100,7 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
       end
 
       it 'calls use case with correct contract' do
-        expect(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!)
+        expect(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!)
           .with(hash_including(<%= @resource_owner_id.present? ? "#{@resource_owner_id}: owner.id, " : '' %>id: <%= @variable_subject %>.id))
 
         get :show, params: { id: <%= @variable_subject %>.id }
@@ -116,13 +108,11 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
     end
 
     context 'when use case fails' do
-      let(:use_case_instance) { instance_double(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>) }
-      let(:failure_result) { Dry::Monads::Failure('<%= @subject_class %> not found') }
+      let(:use_case_instance) { instance_double(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>) }
+      let(:failure_result) { '<%= @subject_class %> not found' }
 
       before do
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!).and_return(true)
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>).to receive(:new).and_return(use_case_instance)
-        allow(use_case_instance).to receive(:result).and_return(failure_result)
+        stub_use_case(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('fetch', '_by_id')].reject { |c| c.empty? }.join("::") %>, failure_result, response: :failure)
       end
 
       it 'redirects to root path with error' do
@@ -178,27 +168,24 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
   end
 
   describe 'POST #create' do
-    let(:use_case_instance) { instance_double(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>) }
+    let(:use_case_instance) { instance_double(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>) }
 
     context 'with valid params' do
-      let(:created_<%= @variable_subject %>) { build(:<%= @variable_subject %>, id: 'uuid-123', **valid_attributes) }
-      let(:success_result) { Dry::Monads::Success(created_<%= @variable_subject %>) }
+      let(:success_result) { Hashie::Mash.new({ id: SecureRandom.uuid }) }
 
       before do
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!).and_return(true)
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>).to receive(:new).and_return(use_case_instance)
-        allow(use_case_instance).to receive(:result).and_return(success_result)
+        stub_use_case(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>, success_result, response: :success)
       end
 
       it 'creates and redirects with success message' do
         post :create, params: { models_<%= @subject_class.underscore %>: valid_attributes }
 
-        expect(response).to redirect_to(<%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_url(id: created_<%= @variable_subject %>.id))
+        expect(response).to redirect_to(<%= [@route_scope_path, @scope_path.singularize].reject { |c| c.empty? }.join("_") %>_url(id: success_result.id))
         expect(flash[:success]).to eq('<%= @subject_class %> was successfully created.')
       end
 
       it 'calls use case with correct contract' do
-        expect(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!)
+        expect(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!)
           .with(hash_including(<%= @resource_owner_id.present? ? "#{@resource_owner_id}: owner.id, " : '' %>**valid_attributes.stringify_keys))
 
         post :create, params: { models_<%= @subject_class.underscore %>: valid_attributes }
@@ -207,12 +194,10 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
 
     context 'with invalid params' do
       let(:errors) { { <%= @fields.first.first %>: ['cannot be blank'] } }
-      let(:failure_result) { Dry::Monads::Failure(errors) }
+      let(:failure_result) { errors}
 
       before do
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!).and_return(true)
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>).to receive(:new).and_return(use_case_instance)
-        allow(use_case_instance).to receive(:result).and_return(failure_result)
+        stub_use_case(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('create')].reject { |c| c.empty? }.join("::") %>, failure_result, response: :failure)
         allow(controller).to receive(:build_form_errors).and_return(<%= @model_class %>.new)
       end
 
@@ -235,7 +220,6 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
 
   describe 'PATCH #update' do
     let(:<%= @variable_subject %>) { create(:<%= @variable_subject %><%= @resource_owner_id.present? ? ", #{@resource_owner_id}: owner.id" : '' %>) }
-    let(:use_case_instance) { instance_double(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>) }
     let(:updated_attributes) { { <%= @fields.first.first %>: 'Updated Value' } }
 
     before do
@@ -246,12 +230,9 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
 
     context 'with valid params' do
       let(:updated_<%= @variable_subject %>) { <%= @variable_subject %>.tap { |obj| obj.<%= @fields.first.first %> = 'Updated Value' } }
-      let(:success_result) { Dry::Monads::Success(updated_<%= @variable_subject %>) }
 
       before do
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!).and_return(true)
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>).to receive(:new).and_return(use_case_instance)
-        allow(use_case_instance).to receive(:result).and_return(success_result)
+        stub_use_case(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>, updated_campaign, response: :success)
       end
 
       it 'updates and redirects with success message' do
@@ -262,7 +243,7 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
       end
 
       it 'calls use case with correct contract' do
-        expect(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!)
+        expect(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!)
           .with(hash_including(<%= @resource_owner_id.present? ? "#{@resource_owner_id}: owner.id, " : '' %>id: <%= @variable_subject %>.id, **updated_attributes.stringify_keys))
 
         patch :update, params: { id: <%= @variable_subject %>.id, models_<%= @subject_class.underscore %>: updated_attributes }
@@ -271,12 +252,10 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
 
     context 'with invalid params' do
       let(:errors) { { <%= @fields.first.first %>: ['cannot be blank'] } }
-      let(:failure_result) { Dry::Monads::Failure(errors) }
+      let(:failure_result) { errors }
 
       before do
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!).and_return(true)
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>).to receive(:new).and_return(use_case_instance)
-        allow(use_case_instance).to receive(:result).and_return(failure_result)
+        stub_use_case(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('update')].reject { |c| c.empty? }.join("::") %>, failure_result, response: :failure)
         allow(<%= @model_class %>).to receive(:find).with(<%= @variable_subject %>.id).and_return(<%= @variable_subject %>)
         allow(controller).to receive(:build_form_errors).and_return(<%= @variable_subject %>)
       end
@@ -293,15 +272,12 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
 
   describe 'DELETE #destroy' do
     let(:<%= @variable_subject %>) { create(:<%= @variable_subject %><%= @resource_owner_id.present? ? ", #{@resource_owner_id}: owner.id" : '' %>) }
-    let(:use_case_instance) { instance_double(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>) }
 
     context 'when deletion succeeds' do
-      let(:success_result) { Dry::Monads::Success(true) }
+      let(:success_result) { true }
 
       before do
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!).and_return(true)
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>).to receive(:new).and_return(use_case_instance)
-        allow(use_case_instance).to receive(:result).and_return(success_result)
+        stub_use_case(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>, success_result, response: :success)
       end
 
       it 'destroys and redirects with success notice' do
@@ -312,7 +288,7 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
       end
 
       it 'calls use case with correct contract' do
-        expect(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!)
+        expect(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!)
           .with(hash_including(<%= @resource_owner_id.present? ? "#{@resource_owner_id}: owner.id, " : '' %>id: <%= @variable_subject %>.id))
 
         delete :destroy, params: { id: <%= @variable_subject %>.id }
@@ -320,12 +296,10 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
     end
 
     context 'when deletion fails' do
-      let(:failure_result) { Dry::Monads::Failure('Cannot delete <%= @variable_subject %>') }
+      let(:failure_result) { 'Cannot delete <%= @variable_subject %>' }
 
       before do
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>).to receive(:contract!).and_return(true)
-        allow(Core::UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>).to receive(:new).and_return(use_case_instance)
-        allow(use_case_instance).to receive(:result).and_return(failure_result)
+        stub_use_case(<%= [@usecase_domain].reject { |c| c.empty? }.join("::").sub(/(.+)/, '\1::') %>UseCases::<%= [@route_scope_class, @scope_class, build_usecase_filename('destroy')].reject { |c| c.empty? }.join("::") %>, failure_result, response: :failure)
       end
 
       it 'redirects with error message' do
@@ -375,10 +349,12 @@ RSpec.describe <%= [@engine_scope_class, @scope_class].reject { |c| c.empty? }.j
 
         it 'redirects with error' do
           controller.params[:id] = 'non-existent'
+          allow(controller).to receive(:redirect_to)
+
           controller.send(:set_<%= @variable_subject %>)
 
-          expect(response).to redirect_to(<%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_url)
-          expect(flash[:error]).to eq('<%= @subject_class %> not found.')
+          expect(controller.instance_variable_get(:@<%= @variable_subject %>)).to be_nil
+          expect(controller).to have_received(:redirect_to).with(<%= [@route_scope_path, @scope_path].reject { |c| c.empty? }.join("_") %>_url, error: 'Campaign not found.')
         end
       end
     end
