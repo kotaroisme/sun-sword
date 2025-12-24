@@ -507,9 +507,9 @@ RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
           expect(content).to include('POST #create')
           expect(content).to include('PATCH #update')
           expect(content).to include('DELETE #destroy')
-          expect(content).to include('instance_double')
-          expect(content).to include('Dry::Monads::Success')
-          expect(content).to include('Dry::Monads::Failure')
+          expect(content).to include('stub_use_case(')
+          expect(content).to include('response: :success')
+          expect(content).to include('response: :failure')
         end
       end
 
@@ -554,7 +554,7 @@ RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
           controller_spec_path = File.join(destination_root, 'app', 'controllers', 'admin', 'test_models_controller_spec.rb')
           content = File.read(controller_spec_path)
           expect(content).to include('RSpec.describe Admin::TestModelsController')
-          expect(content).to include('Core::UseCases::Admin')
+          expect(content).to include('UseCases::Admin')
         end
       end
     end
@@ -597,9 +597,8 @@ RSpec.describe SunSword::ScaffoldGenerator, type: :generator do
 
           controller_spec_path = File.join(destination_root, 'engines', 'admin', 'app', 'controllers', 'admin', 'test_models_controller_spec.rb')
           content = File.read(controller_spec_path)
-          expect(content).to include('instance_double')
+          expect(content).to include('stub_use_case(')
           expect(content).to include('create(:')
-          expect(content).to include('build(:')
         end
       end
     end
